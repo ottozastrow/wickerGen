@@ -16,13 +16,48 @@ import logging, sys
 
 from visualize import *
 from graph import *
+import argparse
+from utils import interpolate_strands
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--show3d', action='store_true',
+                    help='plots entire model with individual strands in 3d')
+parser.add_argument('--animate', action='store_true',
+                    help='plots 2d animation of strand movement')
+parser.add_argument('--showcombined', action='store_true',
+                    help='plots 3d model and robot floor')
+
+parser.add_argument('--smallmodel', action='store_true',
+                    help='plots smaller model')
+
+parser.add_argument('--save_to_file', action='store_true',
+                    help='saves in html file')
+
+
+args = parser.parse_args()
 if __name__ =="__main__":
     logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
-    # links, startknots, knots = generate_nice_sample_graph()
-    links, startknots, knots = generate_sample_graph()
-    weave_graph(links, startknots, knots)
+    if args.smallmodel:
+        links, startknots, knots = generate_sample_graph()
+    else:
+        links, startknots, knots = generate_nice_sample_graph()
 
-    plot_3d_strands(strands_from_graph(startknots))
+    weave_graph(links, startknots, knots)
+    strands = strands_from_graph(startknots)
+    if args.show3d:
+        plot_3d_strands(strands, args.save_to_file)
+
+    if args.animate:
+        animated_strands_2d = calc_2d_robot_plane(strands)
+        plot_animated_strands(animated_strands_2d, save=args.save_to_file)
+
+    if args.showcombined:
+        animated_strands_3d = calc_3d_robot_plane(strands)
+        # for strands in animated_strands_3d:
+        #     strands = interpolate_strands(strands, divide_steps=4)
+        plot_3d_animated_strands(animated_strands_3d, save=args.save_to_file)
+
+        
+

@@ -1,8 +1,9 @@
 import logging
 
-from scipy import interpolate
 from weaving import *
 from knot import Knot
+from utils import interpolate_strands
+
 
 def weave_graph(links, startknots, knots):
     """
@@ -97,10 +98,12 @@ def count_connections(knots, down_links):
 
 
 def generate_nice_sample_graph():
-    layer_radia = [1.2, 0.83, 0.6, 0.66, 0.8, 0.9]
+    layer_radia = [1.2, 0.83]# , 0.6, 0.66, 0.8, 0.9]
+    layer_heights = [1.8, 1.2]#, 0.6, 0.0, -0.6, -1.2]
+
+    num_elements = 3
+
     layers = [[] for i in range(len(layer_radia))]
-    layer_heights = [1.8, 1.2, 0.6, 0.0, -0.6, -1.2]
-    num_elements = 6
     knots = []
     startknots = []
     links_down, links_up = {}, {}
@@ -157,8 +160,8 @@ def generate_sample_graph():
     """ dummy function for testing"""
     startknots = [
             Knot(KnotType.startknot, Pos(0.0*3, 0.1, 0.8)),
-            Knot(KnotType.startknot, Pos(0.13*3, 0.25, 0.8)),
-            Knot(KnotType.startknot, Pos(0.17*3, 0.25, 0.8)),
+            Knot(KnotType.startknot, Pos(0.13*3, 0.05, 0.8)),
+            Knot(KnotType.startknot, Pos(0.17*3, 0.05, 0.8)),
             Knot(KnotType.startknot, Pos(0.3*3, 0.1, 0.8)),
 
             Knot(KnotType.startknot, Pos(0.0*3, 0.0, 0.0)),
@@ -201,14 +204,19 @@ def generate_sample_graph():
 
     return (links_down, links_up), startknots, knots
 
+
 def strands_from_graph(startknots):
     strands = []
     for knot in startknots:
         for bundle in knot.output_bundles:
             strands += bundle
+        
 
     # make strands smooth by interpolating space in between
     for strand in strands:
-        strand.interpolate(Arena.interpolate_steps)
+        strand.x = np.array(strand.x)
+        strand.y = np.array(strand.y)
+        strand.z = np.array(strand.z)
+    strand = interpolate_strands(strands, Arena.interpolate_steps)
 
     return strands

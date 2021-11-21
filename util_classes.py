@@ -34,7 +34,7 @@ class Strand:
         if len(self.x)>0:
             x = np.array(self.x)
             y = np.array(self.y)
-            z = np.array(self.z)     
+            z = np.array(self.z)
             fx = interpolate.interp1d(z, x, kind="cubic")
             fy = interpolate.interp1d(z, y, kind='cubic')
             newz = np.linspace(min(z), max(z), len(z)*divide_steps)
@@ -44,11 +44,15 @@ class Strand:
             self.y = list(ynew)
             self.z = list(newz)
 
+
 class Arena:
     """globally useful configs"""
-    divide_steps = 2
-    interpolate_steps = 6
-    ellipse_a = 0.02
-    ellipse_b = 0.01
+    divide_steps = 1
+    divide_knot_steps = 2
+    interpolate_steps = 12
+    animation_steps = 30
+    ellipse_a = 0.015
+    ellipse_b = 0.015
     bundle_radius = ellipse_b * 2 *1.5 # second *2 is only for nicer optics TODO: Remove
-    weave_cycle_height = 0.08
+    weave_cycle_height = 0.09
+    knot_cycle_height = 0.09

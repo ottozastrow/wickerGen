@@ -16,7 +16,7 @@ class Knot:
         self.knottype = knottype
         self.pos = pos
         
-        self.height = len(knottype) * Arena.weave_cycle_height  # TODO: find better way to determine height. this is not safe.
+        self.height = len(knottype) * Arena.knot_cycle_height  # TODO: find better way to determine height. this is not safe.
         self.centers = [Pos(self.pos.x - Arena.bundle_radius, self.pos.y, self.pos.z), 
                         self.pos,
                         Pos(self.pos.x + Arena.bundle_radius, self.pos.y, self.pos.z)]
@@ -51,7 +51,7 @@ class Knot:
                 (parents[1].pos.x - parents[0].pos.x),
                 (parents[1].pos.y - parents[0].pos.y),
                 )
-            # # parent.position - self.position is the orientation. cancel out z.
+            # parent.position - self.position is the orientation. cancel out z.
         elif len(parents) == 1:
             angle = np.arctan2((parents[0].pos.x - self.pos.x), 
                                (parents[0].pos.y - self.pos.y))
