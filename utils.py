@@ -1,13 +1,12 @@
 import numpy as np
 from numpy import cos, divide, sin
+import math
 
 from util_classes import *
 
 
 pi = np.pi
 
-
-import math
 
 def rotate(origin: Pos, point: Pos, angle: float):
     """
@@ -93,6 +92,17 @@ def round_step_size(quantities, step_size) -> float:
     """
     precision: int = int(round(-math.log(step_size, 10), 0))
     return float(round(quantities, precision))
+
+
+def points_list_from_strand_xyz(strand) -> list[list[float]]:
+    """ creates and returns list of points from lists of x,y,z """
+    histlen = len(strand.x)
+    points = []
+    for i in range(histlen):
+        points.append([strand.x[i], strand.y[i], strand.z[i]])
+    return points
+
+
 
 def interpolate_strands(strands, divide_steps):
     for strand in strands:

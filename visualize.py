@@ -27,22 +27,37 @@ def plot_strands(strands):
 
 
 def plot_3d_strands(strands, save):
-    
     points = []
     assert(len(strands[0].x) > 0), "this strand has no history"
     for i in range(len(strands)):
         strand = strands[i]
-        
         for t in range(len(strand.x)):
             points.append({'y':strand.y[t], 'x':strand.x[t], 'z':strand.z[t], 'color':i})
-        
+    
     df = pd.DataFrame(points)
-    fig = px.line_3d(df, x='x', y='y', z='z', color="color")        
+    fig = px.line_3d(df, x='x', y='y', z='z', color="color")
+
     fig.update_layout(
         scene = dict(aspectmode = "data", ))
     fig.show()
     fig.write_html("renderings/sample.html")
 
+
+def write_obj_file(strands, path='generater_output.obj'):
+    def pt_to_str(pts):
+        return [str(pt) for pt in pts]
+
+    with open(path, 'w') as ofile:
+
+        for strand in strands:
+            strand_points = points_list_from_strand_xyz(strand)
+            for point in strand_points:
+                line = "v " + " ".join(pt_to_str(point)) + "\n"
+                ofile.write(line)
+            indices = [str(i) for i in range(1, len(strand_points) + 1)]
+            indices = "l " + " ".join(indices)
+            ofile.write(indices)
+            
 
 def animations_to_dataframe(animation_steps):
     points = []

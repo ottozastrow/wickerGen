@@ -10,6 +10,7 @@ knot logic without limiations of horngears.
 - later bundles might have 4,8,12, strand (like 4, but side-by-side)
 """
 
+from os import write
 import matplotlib.pyplot as plt
 import numpy as np
 import logging, sys
@@ -48,6 +49,7 @@ if __name__ =="__main__":
     strands = strands_from_graph(startknots)
     if args.show3d:
         plot_3d_strands(strands, args.save_to_file)
+        write_obj_file(strands)
 
     if args.animate:
         animated_strands_2d = calc_2d_robot_plane(strands)
