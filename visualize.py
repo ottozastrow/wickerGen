@@ -71,7 +71,7 @@ def strands_to_dataframe(strands, add_robots=False):
  
         for t in range(len(strand.x)):            
             points.append({'y':strand.y[t], 'x':strand.x[t], 'z':round_step_size(strand.z[t], 0.001), 
-                            'color':i%4,  'strand':i})
+                            'color':i%2,  'strand':i})
 
 
     df = pd.DataFrame(points)
@@ -83,7 +83,7 @@ def plot_3d_animated_strands(animation_steps, save):
     df = animations_to_dataframe(animation_steps)
 
     fig = px.line_3d(df, x='x', y='y', z='z', color="color", 
-                        animation_frame='animation_step', animation_group='strand')
+                        animation_frame='animation_step', animation_group='color')
     fig.update_layout(
         scene = dict(aspectmode = "data", ))
     fig.show()

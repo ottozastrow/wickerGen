@@ -5,11 +5,10 @@ from utils import *
 from util_classes import * 
 from knot import *
 from knot_types import Mappings, KnotType
+import math
 
 
-
-
-def weave_straight_new(strands: list[Strand], start:Pos, end:Pos, start_angle, end_angle):
+def weave_straight_new(strands: list[Strand], start:Pos, end:Pos, start_angle, end_angle, weave_cycles=None):
     logging.debug("started straight bundle from z=%.2f to z=%.2f", start.z, end.z)
 
     assert len(strands) > 0
@@ -18,8 +17,9 @@ def weave_straight_new(strands: list[Strand], start:Pos, end:Pos, start_angle, e
     num_strands = len(strands)
 
     # movement height is adjusted such that after N "weaves" the starting position is achieved
-    adjusted_weave_height = calc_adjusted_weave_height(height, Arena.weave_cycle_height)
-    weave_cycles = round(height/adjusted_weave_height)
+    if weave_cycles == None:
+        adjusted_weave_height = calc_adjusted_weave_height(height, Arena.weave_cycle_height)
+        weave_cycles = round(height/adjusted_weave_height)
 
     divide_steps = 2
     # absolute positions for bundles defined by interpolating between start and stop
@@ -51,13 +51,14 @@ def weave_straight_new(strands: list[Strand], start:Pos, end:Pos, start_angle, e
 def calc_relative_strand_movement(strand, i, num_slots, start_angle):
     circle_points(num_slots, 0, 0)
     x, y = [], []
+    braid_radius = 2 * Arena.strand_width * math.sqrt(num_slots)
 
-    x_center,y_center = circle_points(num_slots, start_angle, Arena.straight_braid_radius)
+    x_center,y_center = circle_points(num_slots, start_angle, braid_radius )
     offset_angle = np.pi * 2 / num_slots / 2  # move half a slot forward
     if i%2:
         offset_angle *= -1
-    x_inner,y_inner = circle_points(num_slots, start_angle + offset_angle, Arena.straight_braid_radius * 0.6)
-    x_outer,y_outer = circle_points(num_slots, start_angle + offset_angle, Arena.straight_braid_radius)
+    x_inner,y_inner = circle_points(num_slots, start_angle + offset_angle, braid_radius * 0.6)
+    x_outer,y_outer = circle_points(num_slots, start_angle + offset_angle, braid_radius)
 
     slot = strand.slot
 
@@ -83,6 +84,41 @@ def calc_relative_strand_movement(strand, i, num_slots, start_angle):
 
 
 def weave_knot(knot):
+    ibs = knot.input_bundles
+    strands = []
+    current_strand_count = 0
+    bundle_sizes = []
+    for ib in ibs:
+        if ib is None:
+            ib = generate_strands(4) 
+            logging.debug("WARNING: unconnected knot")
+        current_strand_count += len(ib)
+        for strand in strands:
+            strand.slot += len(ib)
+        strands += ib
+        bundle_sizes.append(len(ib))
+
+    start =  knot.input_positions[1]
+    start.z -= knot.height / 5
+    end = knot.output_positions[1]
+    end.z += knot.height / 5
+    angle = -np.pi / 2
+    weave_straight_new(strands, start, end, knot.angle + angle, knot.angle + angle, weave_cycles=2)
+
+    # set ouput bundles
+    counter = 0
+    for i in range(len(bundle_sizes)):
+        current_strands = []
+        for j in range(bundle_sizes[i]):                
+            current_strand = strands[counter]
+            strand.slot = j
+            current_strands.append(current_strand)
+            counter += 1
+        knot.output_bundles[i] = current_strands
+
+    
+
+def weave_knot_triangle(knot):
     """
     function uses knot instance to move strands. output are new groups of strands at new positions
     every knot consists of 1 on more weaves (from its cycles_list)
