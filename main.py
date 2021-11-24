@@ -34,6 +34,8 @@ parser.add_argument('--smallmodel', action='store_true',
 
 parser.add_argument('--save_to_file', action='store_true',
                     help='saves in html file')
+parser.add_argument('--obj_path', type=str, default=None,
+                    help='saves in html file')
 
 
 args = parser.parse_args()
@@ -49,11 +51,17 @@ if __name__ =="__main__":
     strands = strands_from_graph(startknots)
     if args.show3d:
         plot_3d_strands(strands, args.save_to_file)
-        write_obj_file(strands)
+
+    if args.obj_path != None:
+        write_obj_file(strands, args.obj_path)
+
 
     if args.animate:
-        animated_strands_2d = calc_2d_robot_plane(strands)
-        plot_animated_strands(animated_strands_2d, save=args.save_to_file)
+        if False: # will show extrapolated robot position
+            animated_strands_2d = calc_2d_robot_plane(strands)
+            plot_animated_strands(animated_strands_2d, save=args.save_to_file)
+        else:
+            plot_animated_strands(strands, save=args.save_to_file)
 
     if args.showcombined:
         animated_strands_3d = calc_3d_robot_plane(strands)

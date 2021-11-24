@@ -19,22 +19,6 @@ def rotate(origin: Pos, point: Pos, angle: float):
 
     point.x = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
     point.y = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
-    
-
-
-def get_relative_knot_position(slot_knot):
-    # 1,2,3,0
-    slot = slot_knot % 4
-    r = Arena.ellipse_b
-    if slot==0:
-        # topleft
-        return r, -r
-    elif slot==1: # topright
-        return -r, r
-    elif slot==2: # bottomleft
-        return r, r
-    else: # bottomright slot==3
-        return -r, -r
 
 
 def min_max_z_from_strands(strands):
@@ -51,6 +35,19 @@ def min_max_z_from_strands(strands):
         minz = 0
     return minz, maxz
 
+def circle_points(num_slots, angle_offset, radius):
+    num_elements = num_slots
+    angles = np.linspace(angle_offset + 0, angle_offset + 2*np.pi -2*np.pi/(num_elements), num_elements)
+    x, y = [], []
+    for el_id in range(num_elements):
+        angles_current = angles + 2*np.pi / (num_elements) / 2
+        y.append(radius * sin(angles_current[el_id]))
+        x.append(radius * cos(angles_current[el_id]))
+    return x, y
+
+
+def generate_strands(num_slots):
+    return [Strand(i) for i in range(num_slots)]
 
 def compute_vis_curve(direction, start_angle, stop_angle, is_knot, stationary=False):
     if is_knot:
@@ -76,9 +73,8 @@ def compute_vis_curve(direction, start_angle, stop_angle, is_knot, stationary=Fa
     
     return x,y
 
-def calc_adjusted_double_weave_height(height, standard_cycle_height):
-
-    num_cycles = height // (standard_cycle_height)
+def calc_adjusted_weave_height(height, standard_cycle_height):
+    num_cycles = height // standard_cycle_height
     adjusted_weave_height = height / num_cycles
 
     return adjusted_weave_height

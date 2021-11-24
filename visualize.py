@@ -32,10 +32,10 @@ def plot_3d_strands(strands, save):
     for i in range(len(strands)):
         strand = strands[i]
         for t in range(len(strand.x)):
-            points.append({'y':strand.y[t], 'x':strand.x[t], 'z':strand.z[t], 'color':i})
+            points.append({'y':strand.y[t], 'x':strand.x[t], 'z':strand.z[t], 'color':i%4, 'strand':i})
     
     df = pd.DataFrame(points)
-    fig = px.line_3d(df, x='x', y='y', z='z', color="color")
+    fig = px.line_3d(df, x='x', y='y', z='z', color="strand")
 
     fig.update_layout(
         scene = dict(aspectmode = "data", ))
@@ -45,18 +45,20 @@ def plot_3d_strands(strands, save):
 
 def write_obj_file(strands, path='generater_output.obj'):
     def pt_to_str(pts):
-        return [str(pt) for pt in pts]
+        return [str((round(pt, 5))) for pt in pts]
 
     with open(path, 'w') as ofile:
-
+        vertex_count = 1
         for strand in strands:
             strand_points = points_list_from_strand_xyz(strand)
             for point in strand_points:
                 line = "v " + " ".join(pt_to_str(point)) + "\n"
                 ofile.write(line)
-            indices = [str(i) for i in range(1, len(strand_points) + 1)]
-            indices = "l " + " ".join(indices)
+            indices = [str(i) for i in range(vertex_count, len(strand_points) + vertex_count)]
+            vertex_count += len(strand_points)
+            indices = "l " + " ".join(indices) + "\n"
             ofile.write(indices)
+            
             
 
 def animations_to_dataframe(animation_steps):
@@ -85,7 +87,7 @@ def strands_to_dataframe(strands, add_robots=False):
  
         for t in range(len(strand.x)):            
             points.append({'y':strand.y[t], 'x':strand.x[t], 'z':round_step_size(strand.z[t], 0.001), 
-                            'color':i})
+                            'color':i%4,  'strand':i})
 
 
     df = pd.DataFrame(points)
@@ -97,7 +99,7 @@ def plot_3d_animated_strands(animation_steps, save):
     df = animations_to_dataframe(animation_steps)
 
     fig = px.line_3d(df, x='x', y='y', z='z', color="color", 
-                        animation_frame='animation_step', animation_group='color')
+                        animation_frame='animation_step', animation_group='strand')
     fig.update_layout(
         scene = dict(aspectmode = "data", ))
     fig.show()
@@ -108,7 +110,7 @@ def plot_3d_animated_strands(animation_steps, save):
 def plot_animated_strands(strands, save):
     df = strands_to_dataframe(strands, add_robots=True)
     fig = px.scatter(df, x='x', y='y', color="color", 
-                        animation_frame='z', animation_group='color')          
+                        animation_frame='z', animation_group='strand', height=1000, width=1000)          
     fig.update_layout(
         scene = dict(aspectmode = "data", ))
     fig.show()
@@ -159,6 +161,6 @@ def calc_2d_robot_plane(strands):
                 new_strand.x.append(x)
                 new_strand.y.append(y)
                 new_strand.z.append(z)
-        new_strands.append(new_strand)   
+        new_strands.append(new_strand) 
 
     return new_strands

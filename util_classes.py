@@ -27,7 +27,7 @@ class Strand:
         self.x = []
         self.y = []
         self.z = []
-
+    
     def interpolate(self, divide_steps):
         # make strands smooth by interpolating space in between
 
@@ -45,14 +45,15 @@ class Strand:
             self.z = list(newz)
 
 
+
 class Arena:
     """globally useful configs"""
     divide_steps = 1
     divide_knot_steps = 2
     interpolate_steps = 12
-    animation_steps = 30
-    ellipse_a = 0.015
-    ellipse_b = 0.015
-    bundle_radius = ellipse_b * 2 *1.5 # second *2 is only for nicer optics TODO: Remove
-    weave_cycle_height = 0.09
-    knot_cycle_height = 0.09
+    animation_steps = 80
+    straight_braid_radius = 0.02
+    knot_bundle_distance = 0.03
+    weave_cycle_height = 0.08
+    knot_cycle_height = 0.1
+    strand_width = 0.004  # including some padding
