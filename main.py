@@ -47,7 +47,13 @@ if __name__ =="__main__":
     else:
         links, startknots, knots = generate_nice_sample_graph()
 
+    for knot in knots:
+        parents = [knots[id] for id in links[1][knot.id]]
+        knot.initialize_knot_slots(parents)
+        knot.align_orientation(parents)
+
     weave_graph(links, startknots, knots)
+
     strands = strands_from_graph(startknots)
     if args.show3d:
         plot_3d_strands(strands, args.save_to_file)

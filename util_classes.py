@@ -53,7 +53,11 @@ class Arena:
     interpolate_steps = 12
     animation_steps = 80
     straight_braid_radius = 0.02
-    knot_bundle_distance = 0.03
+    knot_bundle_distance = 0.1
+    knot_gridsize_y = 0.03
+    knot_gridsize_x = 0.01
     weave_cycle_height = 0.08
-    knot_cycle_height = 0.1
+    knot_cycle_height = 0.04
     strand_width = 0.004  # including some padding
+
+    interpolate_steps_per_meter = 0.005

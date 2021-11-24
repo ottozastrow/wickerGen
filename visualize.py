@@ -8,22 +8,6 @@ from copy import deepcopy
 
 
 
-def plot_strands(strands):
-    starttime = 0
-    # endtime = Arena.divide_steps*2
-    endtime = len(strands[0].x)
-    
-    # for strand in strands:
-    #     plt.text(strand.x[-1], strand.y[-1], strand.knot_slot)
-    #     plt.plot(strand.x[-1], strand.y[-1])
-    counter = 0
-    for strand in strands:
-        plt.plot(strand.x[starttime:endtime], strand.y[starttime:endtime])
-        counter += 1
-        if counter == 4:
-            break
-    
-    plt.show()
 
 
 def plot_3d_strands(strands, save):

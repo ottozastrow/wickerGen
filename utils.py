@@ -100,24 +100,42 @@ def points_list_from_strand_xyz(strand) -> list[list[float]]:
 
 
 
-def interpolate_strands(strands, divide_steps):
+def interpolate_strands(strands, kind="cubic", step_size=0.01):
+    minz, maxz = None, None
+    
+    # first get global max and minimum z value, in order to create global grid
+    for strand in strands:
+        z = np.array(strand.z)
+        currentmin = round_step_size(min(z), step_size)
+        currentmax = round_step_size(max(z), step_size)
+        if minz == None or currentmin < minz:
+            minz = currentmin
+        if maxz == None or currentmax > maxz:
+            maxz = currentmax
+    num_steps = (maxz-minz) / Arena.interpolate_steps_per_meter  # 0.005 is steps per meter
+
+    global_z = np.linspace(minz, maxz, int(num_steps)) # global grid
+    
+    # interpolate along this grid (in the z interval in which the strand is defined)
     for strand in strands:
         if len(strand.x)>0:
             x = np.array(strand.x)
             y = np.array(strand.y)
             z = np.array(strand.z)
             
-            minz = round_step_size(min(z), 0.01)
-            maxz = round_step_size(max(z), 0.01)
+            minz = round_step_size(min(z), step_size)
+            maxz = round_step_size(max(z), step_size)
 
-            fx = interpolate.interp1d(z, x, kind="cubic", fill_value="extrapolate")
-            fy = interpolate.interp1d(z, y, kind='cubic', fill_value="extrapolate")
-            newz = np.linspace(minz, maxz, len(z)*divide_steps)
-            xnew = fx(newz)   # use interpolation function returned by `interp1d`
-            ynew = fy(newz)   # use interpolation function returned by `interp1d`
+            fx = interpolate.interp1d(z, x, kind=kind, fill_value="extrapolate")
+            fy = interpolate.interp1d(z, y, kind=kind, fill_value="extrapolate")
+
+            currentz = [zi for zi in global_z if minz < zi and zi < maxz]
+            
+            xnew = fx(currentz)   # use interpolation function returned by `interp1d`
+            ynew = fy(currentz)   # use interpolation function returned by `interp1d`
             strand.x = list(xnew)
             strand.y = list(ynew)
-            strand.z = list(newz)
+            strand.z = list(currentz)
 
 
 def compute_robobt_position(strand, index=2):

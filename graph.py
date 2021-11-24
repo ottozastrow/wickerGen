@@ -1,9 +1,9 @@
 import logging
+from collections import defaultdict
 
 from weaving import *
 from knot import Knot
 from utils import interpolate_strands
-
 
 def weave_graph(links, startknots, knots):
     """
@@ -26,7 +26,8 @@ def weave_graph(links, startknots, knots):
         for parent in current_set:
             
             children = [knots[i] for i in links_down[parent.id]]
-            assert len(children) <= len(parent.output_positions), ("to many used outputs at a knot%d", len(children))
+            assert len(children) <= len(parent.output_positions), ("to many used outputs at a knot%d %d %b", len(children), len(parent.output_positions), \
+                     parent.knottype==KnotType.startknot)
             logging.debug("weaving for %d", parent.id)
 
             for child in children:
@@ -43,6 +44,7 @@ def weave_graph(links, startknots, knots):
                     for inpos_i in range(len(child.input_positions)):
                         inpos = child.input_positions[inpos_i]
                         dist = np.linalg.norm(outpos.np() - inpos.np())
+
                         if child.inputs_used[inpos_i] is False and parent.outputs_used[outpos_i] is False:
                             if smallest_dist is None or dist<smallest_dist:
                                 selected_inpos_i = inpos_i
@@ -51,9 +53,10 @@ def weave_graph(links, startknots, knots):
                                 selected_outpos = outpos
                                 
                                 smallest_dist = dist
-                        # Todo mark inpos and outpos as occupied and prevent double use
-                if selected_inpos is None or selected_outpos is None:
-                    raise Exception("didn't find position")
+                if selected_inpos is None:
+                    raise Exception("didn't find input position")
+                if selected_outpos is None:
+                    raise Exception("didn't find output position")
 
                 if selected_outpos.z < selected_inpos.z:
                     logging.debug("invalid z at: child id %s, parent id %s", child.id, parent.id)
@@ -73,20 +76,23 @@ def weave_graph(links, startknots, knots):
 
         for knot in next_knots:
             # check if all incoming bundles are already created. unless if its a startknot
-            if knot.knottype == KnotType.startknot or all(knot.inputs_used):
+            if knot.knottype == KnotType.startknot or sum(knot.inputs_used) == knot.num_input_positions:
+                # sometimes a knot will start with empty slots. in those cases generate new strands
+                for i in range(len(knot.input_bundles)):
+                    if knot.inputs_used[i] == False:
+                        knot.inputs_used[i] = True
+                        knot.input_bundles[i] = generate_strands(4)
+                
                 weave_knot(knot)
         next_knots = []
     
 
 def add_link(knots, links, parent, child):
-    # print(parent.output_positions[0].z, child.input_positions[0].z)
-    assert parent.output_positions[0].z >= child.input_positions[0].z, child.id
-    
-    links_down, links_up = links
+    links_down, links_up = links  
     links_down[parent.id].append(child.id)
     links_up[child.id].append(parent.id)
-
-    all_parents = [knots[id] for id in links_up[child.id]]
+    parent.add_output()
+    child.add_input()
 
 
 def count_connections(knots, down_links):
@@ -95,23 +101,18 @@ def count_connections(knots, down_links):
         counter += len(down_links[id])
     return counter
 
-
-
 def generate_nice_sample_graph():
     layer_radia = [1.2, 0.83 , 0.6, 0.66, 0.8, 0.9]
     layer_heights = [2.4, 1.7, 1, 0.0, -1, -1.8]
 
-
-    num_elements = 5
+    num_elements = 3
 
     layers = [[] for i in range(len(layer_radia))]
     knots = []
     startknots = []
-    links_down, links_up = {}, {}
+    links_down, links_up = defaultdict(list), defaultdict(list)  # will return [] instead of key error
     links = (links_down, links_up)
-    for knot_id in range((num_elements+2) * len(layer_radia)):
-        links_down[knot_id] = []
-        links_up[knot_id] = []
+
     
     layer_radius = layer_radia[0]
     angles = np.linspace(0, 2*np.pi -2*np.pi/(num_elements*2), num_elements*2)
@@ -125,7 +126,18 @@ def generate_nice_sample_graph():
         knots.append(knot)
         layers[0].append(knot)
 
+    # straight startknots
+    straight_start_knots = []
+    angles = np.linspace(0, 2*np.pi -2*np.pi/(num_elements*2), num_elements*2)
+    for el_id in range(num_elements*2):
+        x = layer_radius * cos(angles[el_id])
+        y = layer_radius * sin(angles[el_id])
+        knot = Knot(KnotType.startknot, Pos(x,y,layer_heights[0]), num_strands=8)
+        startknots.append(knot)
+        knots.append(knot)
+        straight_start_knots.append(knot)
 
+    
     for l in range(1, len(layer_radia)):
         layer_radius = layer_radia[l]
 
@@ -142,19 +154,24 @@ def generate_nice_sample_graph():
             if l==1:
                 parent1 = layers[l-1][(el_id*2)%(num_elements*2)]
                 parent2 = layers[l-1][(el_id*2+1)%(num_elements*2)]
-            else:
+                parent3 = straight_start_knots[(el_id*2+1)%(num_elements*2)]
+                
+            elif l==2:
                 parent1 = layers[l-1][(el_id+1)%(num_elements)]
                 parent2 = layers[l-1][(el_id)%(num_elements)]
+                parent3 = straight_start_knots[(el_id*2+2)%(num_elements*2)]
+
+            else: # >2
+                parent1 = layers[l-1][(el_id+1)%(num_elements)]
+                parent2 = layers[l-1][(el_id)%(num_elements)]
+                parent3 = layers[l-2][(el_id+1) % num_elements]
+
             add_link(knots, links, parent1, knot)
             add_link(knots, links, parent2, knot)
+            add_link(knots, links, parent3, knot)
 
-
-    for knot in knots:
-        parents = [knots[id] for id in links_up[knot.id]]
-        knot.align_orientation(parents)
+    
     return (links_down, links_up), startknots, knots
-        
-
 
 
 def generate_sample_graph():
@@ -201,10 +218,7 @@ def generate_sample_graph():
     add_link(knots, links, startknots[6], k3)
     add_link(knots, links, k3, k5)
     add_link(knots, links, k4, k5)
-
-    for knot in knots:
-        parents = [knots[id] for id in links_up[knot.id]]
-        knot.align_orientation(parents)
+    add_link(knots, links, k1,k5)
 
     return (links_down, links_up), startknots, knots
 
@@ -215,11 +229,7 @@ def strands_from_graph(startknots):
         for bundle in knot.output_bundles:
             strands += bundle
     
-    for strand in strands:
-        strand.x = np.array(strand.x)
-        strand.y = np.array(strand.y)
-        strand.z = np.array(strand.z)
     # make strands smooth by interpolating space in between
-    interpolate_strands(strands, Arena.interpolate_steps)
+    interpolate_strands(strands, kind="cubic", step_size=0.02)
 
     return strands
