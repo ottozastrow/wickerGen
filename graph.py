@@ -39,11 +39,18 @@ def weave_graph(links, startknots, knots):
                 smallest_dist = None
                 selected_inpos = None
                 selected_outpos = None
+
                 for outpos_i in range(len(parent.output_positions)):
                     outpos = parent.output_positions[outpos_i]
                     for inpos_i in range(len(child.input_positions)):
                         inpos = child.input_positions[inpos_i]
                         dist = np.linalg.norm(outpos.np() - inpos.np())
+
+                        # nasty hack to align vertical strands correctly. only works for knotsize 3
+                        if outpos_i==1:
+                            if inpos_i !=1:
+                                dist *= 4
+                        
 
                         if child.inputs_used[inpos_i] is False and parent.outputs_used[outpos_i] is False:
                             if smallest_dist is None or dist<smallest_dist:

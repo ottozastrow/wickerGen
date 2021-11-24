@@ -7,40 +7,6 @@ from knot import *
 from knot_types import Mappings, KnotType
 
 
-"""
-slot indexes (for case of two bundles)
-[[1, 2, 5, 6],
- [3, 0, 7, 4]]
-"""
-
-
-
-def weave_straight(strands: list[Strand], start:Pos, end:Pos, start_angle, end_angle):
-    logging.debug("started straight bundle from z=%.2f to z=%.2f", start.z, end.z)
-
-    assert len(strands) > 0
-    assert(end.z < start.z), end
-    height = start.z-end.z
-
-    rotation = end_angle - start_angle
-    # movement height is adjusted such that after N "weaves" the starting position is achieved
-    adjusted_weave_height = calc_adjusted_weave_height(height, Arena.weave_cycle_height)
-    weave_cycles = round(height/adjusted_weave_height)
-    cycles_list = []
-
-    # weaving consist of two moves.
-    for i in range(weave_cycles):
-        cycles_list += [Mappings.mapping_straight, Mappings.mapping_straight_reversed]
-
-
-    # absolute positions for bundles defined by interpolating between start and stop
-    x0 = np.linspace(start.x, end.x, 2 * weave_cycles * Arena.divide_steps)
-    y0 = np.linspace(start.y, end.y, 2 * weave_cycles * Arena.divide_steps)
-
-    weave_strands(strands, height, adjusted_weave_height, cycles_list, start.z, 
-                  is_knot=False, x0=x0, y0=y0, start_angle=start_angle, stop_angle=end_angle)
-    assert len(strands) == 4, len(strands)
-
 
 
 def weave_straight_new(strands: list[Strand], start:Pos, end:Pos, start_angle, end_angle):
@@ -116,43 +82,6 @@ def calc_relative_strand_movement(strand, i, num_slots, start_angle):
     return x,y
 
 
-def weave_knot_old(knot):
-    """
-    function uses knot instance to move strands. output are new groups of strands at new positions
-    every knot consists of 1 on more weaves (from its cycles_list)
-    """
-    
-    logging.debug("started knot with id %d", knot.id)
-    cycles_list = knot.knottype
-    strands1 = knot.input_bundles[0]
-    strands2 = knot.input_bundles[1]
-    
-    if strands1 is None :
-        strands1 = generate_strands(4)
-        logging.debug("WARNING: unconnected knot at %s", knot.pos)
-    elif strands2 is None:
-        strands2 = generate_strands(4)
-        logging.debug("WARNING: unconnected knot at %s", knot.pos)
-    
-    assert len(strands1) == 4
-    assert len(strands2) == 4
-
-    strands = strands1 + strands2
-    
-    for strand in strands2:
-        strand.knot_slot = strand.slot + len(strands2)
-    for strand in strands1:
-        strand.knot_slot = strand.slot
-
-    height = len(cycles_list) * Arena.knot_cycle_height
-    weave_strands(strands, height, Arena.knot_cycle_height, cycles_list, knot.input_positions[0].z,
-                  is_knot=True, knot=knot, bundle_centers=knot.centers)
-
-    knot.output_bundles[0] = [strand for strand in strands if strand.knot_slot < 4]
-    knot.output_bundles[1] = [strand for strand in strands if strand.knot_slot >= 4]
-
-    logging.debug("finished knot")
-
 def weave_knot(knot):
     """
     function uses knot instance to move strands. output are new groups of strands at new positions
@@ -224,57 +153,8 @@ def weave_knot(knot):
 
     # set ouput bundles
     for i in range(len(ibs)):
-
         knot.output_bundles[i] = ibs[i]
 
     logging.debug("finished knot")
 
 
-def weave_strands(strands, height, adjusted_weave_height, cycles_list, z_offset,
-                  bundle_centers=None, knot=None, is_knot=None, 
-                  x0=None, y0=None, start_angle=None, stop_angle=None):
-    
-  
-    divide_steps = Arena.divide_knot_steps if is_knot else Arena.divide_steps
-
-    weave_cycles = len(cycles_list)
-    z = np.linspace(z_offset, z_offset - height, weave_cycles * divide_steps, endpoint=False)
-
-    for strand in strands:
-        strand.z += list(z)
-    if not is_knot: 
-        # create a startangle and stopangle for all weave cycles
-        angles = np.linspace(start_angle, stop_angle, weave_cycles + 1)
-    else:
-        angles = np.ones(weave_cycles +1) * knot.angle
-    for cycle in range(weave_cycles):
-        for i in range(len(strands)):
-
-            strand = strands[i]
-            movement = cycles_list[cycle][strand.knot_slot]
-
-
-            if strand.knot_slot == movement['target']: # if strand is stationary
-                x_relative, y_relative = compute_vis_curve(movement['direction'], 
-                                                           angles[cycle], angles[cycle+1], is_knot, stationary=True)
-            else:
-                x_relative, y_relative = compute_vis_curve(movement['direction'], 
-                                                           angles[cycle], angles[cycle+1], is_knot, stationary=False)
-            
-            if is_knot:
-                x_absolute = bundle_centers[movement['cent']].x
-                y_absolute = bundle_centers[movement['cent']].y
-            else: # is bundle
-                current_step = cycle * divide_steps
-                x_absolute = x0[current_step:current_step + divide_steps]
-                y_absolute = y0[current_step:current_step + divide_steps]
-                
-            strand.x += list(x_relative + x_absolute)
-            strand.y += list(y_relative + y_absolute)
-            strand.knot_slot = movement['target']
-
-
-    for strand in strands:
-        strand.slot = strand.knot_slot % 4
-
-    

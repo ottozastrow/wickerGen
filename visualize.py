@@ -43,7 +43,7 @@ def write_obj_file(strands, path='generater_output.obj'):
             indices = "l " + " ".join(indices) + "\n"
             ofile.write(indices)
             
-            
+    print("wrote obj file to ", path)
 
 def animations_to_dataframe(animation_steps):
     points = []
