@@ -2,6 +2,8 @@
 import numpy as np
 from scipy import interpolate
 
+
+
 class Pos:
     def __init__(self, x: float, y: float, z: float, label=""):
         self.x = x
@@ -17,8 +19,18 @@ class Pos:
     def __str__(self):
         return str((self.x, self.y, self.z, self.label))
     
-    def np(self):
+    def np(self) -> np.ndarray:
         return np.array([self.x, self.y, self.z])
+
+
+class KnotType:
+    """different knot types are currently not supported"""
+    move1 = [None]
+    move2 = [None]
+    move3 = [None]
+    move4 = [None]
+    startknot = []
+
 
 class Strand:
     def __init__(self, slot):
@@ -28,7 +40,7 @@ class Strand:
         self.y = []
         self.z = []
     
-    def interpolate(self, divide_steps):
+    def interpolate(self, divide_steps: int):
         # make strands smooth by interpolating space in between
 
         if len(self.x)>0:
@@ -51,7 +63,7 @@ class Arena:
     divide_steps = 1
     divide_knot_steps = 2
     interpolate_steps = 12
-    animation_steps = 40
+    animation_steps = 50
     straight_braid_radius = 0.02
     knot_bundle_distance = 0.07
     knot_gridsize_y = 0.04

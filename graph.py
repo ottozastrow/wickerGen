@@ -5,6 +5,47 @@ from weaving import *
 from knot import Knot
 from utils import interpolate_strands
 
+
+def choose_parent_child_link(parent:Knot, child:Knot):
+    # decide which of the childrens inputs to connect to 
+    # by choosing the input output position combination with the smalles euclid distance
+    smallest_dist = None
+    selected_inpos = None
+    selected_outpos = None
+    selected_outpos_i = None
+    selected_inpos_i = None
+
+    for outpos_i in range(len(parent.output_positions)):
+        outpos = parent.output_positions[outpos_i]
+        for inpos_i in range(len(child.input_positions)):
+            inpos = child.input_positions[inpos_i]
+            dist = np.linalg.norm(outpos.np() - inpos.np())
+
+            # nasty hack to align vertical strands correctly. only works for knotsize 3
+            if outpos_i==1:
+                if inpos_i !=1:
+                    dist *= 4
+            
+            if child.inputs_used[inpos_i] is False and parent.outputs_used[outpos_i] is False:
+                if smallest_dist is None or dist<smallest_dist:
+                    selected_inpos_i = inpos_i
+                    selected_inpos = inpos
+                    selected_outpos_i = outpos_i
+                    selected_outpos = outpos
+                    
+                    smallest_dist = dist
+    if selected_inpos is None:
+        raise Exception("didn't find input position")
+    if selected_outpos is None:
+        raise Exception("didn't find output position")
+
+    if selected_outpos.z < selected_inpos.z:
+        logging.debug("invalid z at: child id %s, parent id %s", child.id, parent.id)
+
+    return selected_outpos_i, selected_inpos_i, selected_outpos, selected_inpos
+    
+
+
 def weave_graph(links, startknots, knots):
     """
     how it works:
@@ -26,48 +67,18 @@ def weave_graph(links, startknots, knots):
         for parent in current_set:
             
             children = [knots[i] for i in links_down[parent.id]]
-            assert len(children) <= len(parent.output_positions), ("to many used outputs at a knot%d %d %b", len(children), len(parent.output_positions), \
+            assert len(children) <= len(parent.output_positions), \
+                     ("to many used outputs at a knot%d %d %b", len(children), len(parent.output_positions), \
                      parent.knottype==KnotType.startknot)
             logging.debug("weaving for %d", parent.id)
 
             for child in children:
                 if child not in next_knots:
                     next_knots.append(child)
+            
+                selected_outpos_i, selected_inpos_i, \
+                    selected_outpos, selected_inpos = choose_parent_child_link(parent, child)
                 
-                # decide which of the childrens inputs to connect to 
-                # by choosing the input output position combination with the smalles euclid distance
-                smallest_dist = None
-                selected_inpos = None
-                selected_outpos = None
-
-                for outpos_i in range(len(parent.output_positions)):
-                    outpos = parent.output_positions[outpos_i]
-                    for inpos_i in range(len(child.input_positions)):
-                        inpos = child.input_positions[inpos_i]
-                        dist = np.linalg.norm(outpos.np() - inpos.np())
-
-                        # nasty hack to align vertical strands correctly. only works for knotsize 3
-                        if outpos_i==1:
-                            if inpos_i !=1:
-                                dist *= 4
-                        
-
-                        if child.inputs_used[inpos_i] is False and parent.outputs_used[outpos_i] is False:
-                            if smallest_dist is None or dist<smallest_dist:
-                                selected_inpos_i = inpos_i
-                                selected_inpos = inpos
-                                selected_outpos_i = outpos_i
-                                selected_outpos = outpos
-                                
-                                smallest_dist = dist
-                if selected_inpos is None:
-                    raise Exception("didn't find input position")
-                if selected_outpos is None:
-                    raise Exception("didn't find output position")
-
-                if selected_outpos.z < selected_inpos.z:
-                    logging.debug("invalid z at: child id %s, parent id %s", child.id, parent.id)
-
                 # only draw bundle if preceding knots were already drawn 
                 if parent.output_bundles[selected_outpos_i] is not None:
                     weave_straight_new(

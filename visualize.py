@@ -7,27 +7,21 @@ import pandas as pd
 from copy import deepcopy
 
 
-
-
-
-def plot_3d_strands(strands, save):
-    points = []
-    assert(len(strands[0].x) > 0), "this strand has no history"
-    for i in range(len(strands)):
-        strand = strands[i]
-        for t in range(len(strand.x)):
-            points.append({'y':strand.y[t], 'x':strand.x[t], 'z':strand.z[t], 'color':i%4, 'strand':i})
-    
+def plot_3d_strands(strands: list[Strand], save:bool):
+    points = strands_to_dict_list(strands)
     df = pd.DataFrame(points)
-    fig = px.line_3d(df, x='x', y='y', z='z', color="strand")
+
+    fig = px.line_3d(df, x='x', y='y', z='z', color="color", 
+                     line_group="strand", color_discrete_map={0:"brown", 1:"chocolate"})
 
     fig.update_layout(
         scene = dict(aspectmode = "data", ))
     fig.show()
-    fig.write_html("renderings/sample.html")
+    if save:
+        fig.write_html("renderings/sample.html")
 
 
-def write_obj_file(strands, path='generater_output.obj'):
+def write_obj_file(strands: list[Strand], path:str='generater_output.obj'):
     def pt_to_str(pts):
         return [str((round(pt, 5))) for pt in pts]
 
@@ -45,45 +39,35 @@ def write_obj_file(strands, path='generater_output.obj'):
             
     print("wrote obj file to ", path)
 
-def animations_to_dataframe(animation_steps):
+
+def animations_to_dataframe(animation_steps: list[list[Strand]]):
     points = []
-
     for step_i in range(len(animation_steps)):
-        strands = animation_steps[step_i]
-        assert(len(strands[0].x) > 0), "this strand has no history"
-        for i in range(len(strands)):
-            strand = strands[i]
-            
-            for t in range(len(strand.x)):
-                
-                points.append({'y':strand.y[t], 'x':strand.x[t], 'z':strand.z[t], 
-                               'color':i, 'animation_step': step_i})
-                
-    df = pd.DataFrame(points)
-    
-    return df
+        points += strands_to_dict_list(animation_steps[step_i], animation_step=step_i)
+    return points
 
-def strands_to_dataframe(strands, add_robots=False):
+
+def strands_to_dict_list(strands: list[Strand], animation_step:int=0) -> list[dict]:
+    """ 
+    creates list of dicts (that can be used for visualization) from list of strands
+    animation_step
+    output used to generate a dataframe
+    """
     points = []
     assert(len(strands[0].x) > 0), "this strand has no history"
     for i in range(len(strands)):
         strand = strands[i]
- 
         for t in range(len(strand.x)):            
             points.append({'y':strand.y[t], 'x':strand.x[t], 'z':round_step_size(strand.z[t], 0.001), 
-                            'color':i%2,  'strand':i})
+                            'color':i%2,  'strand':i, 'animation_step':animation_step})
+    return points
 
 
-    df = pd.DataFrame(points)
-    
-    return df
-
-
-def plot_3d_animated_strands(animation_steps, save):
+def plot_3d_animated_strands(animation_steps: list[list[Strand]], save: bool):
     df = animations_to_dataframe(animation_steps)
 
-    fig = px.line_3d(df, x='x', y='y', z='z', color="color", 
-                        animation_frame='animation_step', animation_group='color')
+    fig = px.line_3d(df, x='x', y='y', z='z', color="color", color_discrete_map={0:"brown", 1:"chocolate"},
+                        animation_frame='animation_step', animation_group='strand', line_group="strand")
     fig.update_layout(
         scene = dict(aspectmode = "data", ))
     fig.show()
@@ -92,7 +76,9 @@ def plot_3d_animated_strands(animation_steps, save):
 
 
 def plot_animated_strands(strands, save):
-    df = strands_to_dataframe(strands, add_robots=True)
+    points = strands_to_dict_list(strands)
+    df = pd.DataFrame(points)
+
     fig = px.scatter(df, x='x', y='y', color="color", 
                         animation_frame='z', animation_group='strand', height=1000, width=1000)          
     fig.update_layout(
@@ -102,15 +88,15 @@ def plot_animated_strands(strands, save):
         fig.write_html("renderings/sample_2d_animation.html")
 
 
-def calc_3d_robot_plane(strands, relative_time = 0.01):
+def calc_3d_robot_plane(strands:list[Strand], relative_time:float=0.3) -> list[list[Strand]]:
     """ 
-    relative_time: float between 0 and 1. cuts 3d model until that time. then shows robot pane 
+    relative_time: float between 0 and 1. starts 3d animation from that relative vertical position  
     """
     minz, maxz = min_max_z_from_strands(strands)
     # note: z is vertical component of 3d coordinate. time is -z because we weave top-down
     cut_threshold = maxz - (maxz-minz)*relative_time
     steps = Arena.animation_steps
-    slice_height = 0.005
+    slice_height = Arena.interpolate_steps_per_meter
     animation_steps = []
     for i in range(steps):
         new_strands = []
@@ -134,7 +120,7 @@ def calc_3d_robot_plane(strands, relative_time = 0.01):
     return animation_steps
 
 
-def calc_2d_robot_plane(strands):
+def calc_2d_robot_plane(strands: list[Strand]) -> list[Strand]:
     new_strands = []
     for strand in strands:
         new_strand = Strand(strand.slot)

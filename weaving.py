@@ -4,7 +4,6 @@ import numpy as np
 from utils import *
 from util_classes import * 
 from knot import *
-from knot_types import Mappings, KnotType
 import math
 
 

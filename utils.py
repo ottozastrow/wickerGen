@@ -46,32 +46,9 @@ def circle_points(num_slots, angle_offset, radius):
     return x, y
 
 
-def generate_strands(num_slots):
+def generate_strands(num_slots:int) -> list[Strand]:
     return [Strand(i) for i in range(num_slots)]
 
-def compute_vis_curve(direction, start_angle, stop_angle, is_knot, stationary=False):
-    if is_knot:
-        divide_steps = Arena.divide_knot_steps
-    else:
-        divide_steps = Arena.divide_steps
-    
-    directions = {
-        'upleft': {'offset': 0, 'rotation': pi/2*3 + pi/4},
-        'downright':    {'offset': 1, 'rotation': pi/2*3 + pi/4},
-        'downleft':  {'offset': 0, 'rotation': pi/4},
-        'upright':   {'offset': 1, 'rotation': pi/4},
-    }
-    offset = directions[direction]['offset']
-    rotation = directions[direction]['rotation']
-    bundle_twist = np.linspace(start_angle, stop_angle, divide_steps)
-    if stationary:
-        t = np.zeros(divide_steps) + offset * np.pi
-    else:
-        t = np.linspace(0, np.pi - np.pi/divide_steps, divide_steps) + offset * np.pi
-    x = Arena.ellipse_a*cos(t)*cos(rotation + bundle_twist) - Arena.ellipse_b * sin(t) * sin(rotation + bundle_twist)
-    y = Arena.ellipse_b*sin(t)*cos(rotation + bundle_twist) + Arena.ellipse_a * cos(t) * sin(rotation + bundle_twist)
-    
-    return x,y
 
 def calc_adjusted_weave_height(height, standard_cycle_height):
     num_cycles = height // standard_cycle_height
@@ -138,7 +115,7 @@ def interpolate_strands(strands, kind="cubic", step_size=0.01):
             strand.z = list(currentz)
 
 
-def compute_robobt_position(strand, index=2):
+def compute_robobt_position(strand: Strand, index=2) -> tuple[float, float, float]:
     if len(strand.x)>2:
         # get arrays of last 2 points for interpolation. minimum 2 are required for linear interpolation
         x = np.array(strand.x)[index-2:index]
@@ -146,7 +123,6 @@ def compute_robobt_position(strand, index=2):
         z = np.array(strand.z)[index-2:index]
         minz = round_step_size(min(z), 0.001)
         maxz = round_step_size(max(z), 0.001)
-
 
         fx = interpolate.interp1d(z, x, kind="linear", fill_value="extrapolate")
         fy = interpolate.interp1d(z, y, kind='linear', fill_value="extrapolate")

@@ -1,7 +1,7 @@
 from numpy import arctan
 from util_classes import *
-from knot_types import Mappings, KnotType
 from utils import rotate, generate_strands
+
 
 class Knot:
     """

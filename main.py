@@ -72,7 +72,7 @@ if __name__ =="__main__":
     if args.showcombined:
         animated_strands_3d = calc_3d_robot_plane(strands)
         # for strands in animated_strands_3d:
-        #     strands = interpolate_strands(strands, divide_steps=4)
+        #     strands = interpolate_strands(strands)
         plot_3d_animated_strands(animated_strands_3d, save=args.save_to_file)
 
         
