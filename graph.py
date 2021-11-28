@@ -117,8 +117,7 @@ def generate_nice_sample_graph():
     layers = [[] for i in range(len(layer_radia))]
     knots = []
     startknots = []
-    links_down, links_up = defaultdict(list), defaultdict(list)  # will return [] instead of key error
-    links = (links_down, links_up)
+    links = defaultdict(list), defaultdict(list)  # will return [] instead of key error
 
     
     layer_radius = layer_radia[0]
@@ -178,7 +177,7 @@ def generate_nice_sample_graph():
             add_link(knots, links, parent3, knot)
 
     
-    return (links_down, links_up), startknots, knots
+    return links, startknots, knots
 
 
 def generate_sample_graph():
@@ -208,11 +207,7 @@ def generate_sample_graph():
     # k8 = Knot(KnotType.move2, Pos(0.8, 0.4, 0.0))
     knots = startknots + [k1, k2, k3, k4, k5, k6]
 
-    links_down, links_up = {}, {}
-    links = (links_down, links_up)
-    for knot in knots:
-        links_down[knot.id] = []
-        links_up[knot.id] = []
+    links = defaultdict(list), defaultdict(list)
 
     add_link(knots, links, startknots[0],k1)
     add_link(knots, links, startknots[1],k1)
@@ -227,7 +222,11 @@ def generate_sample_graph():
     add_link(knots, links, k4, k5)
     add_link(knots, links, k1,k5)
 
-    return (links_down, links_up), startknots, knots
+    return links, startknots, knots
+
+def generate_prototype_graph():
+
+    startknot_positions = np.meshgrid(np.linspace())
 
 
 def strands_from_graph(startknots):
@@ -237,6 +236,6 @@ def strands_from_graph(startknots):
             strands += bundle
     
     # make strands smooth by interpolating space in between
-    interpolate_strands(strands, kind="cubic", step_size=0.02)
+    interpolate_strands(strands, kind="cubic", step_size=0.005)
 
     return strands

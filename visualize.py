@@ -102,7 +102,7 @@ def plot_animated_strands(strands, save):
         fig.write_html("renderings/sample_2d_animation.html")
 
 
-def calc_3d_robot_plane(strands, relative_time = 0.05):
+def calc_3d_robot_plane(strands, relative_time = 0.01):
     """ 
     relative_time: float between 0 and 1. cuts 3d model until that time. then shows robot pane 
     """
@@ -110,7 +110,7 @@ def calc_3d_robot_plane(strands, relative_time = 0.05):
     # note: z is vertical component of 3d coordinate. time is -z because we weave top-down
     cut_threshold = maxz - (maxz-minz)*relative_time
     steps = Arena.animation_steps
-    slice_height = 0.01
+    slice_height = 0.005
     animation_steps = []
     for i in range(steps):
         new_strands = []
