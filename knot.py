@@ -22,10 +22,10 @@ class Knot:
         self.num_output_positions = 0
         self.num_input_positions = 0
 
-    def add_output(self):
+    def add_output(self) -> None:
         self.num_output_positions += 1
 
-    def add_input(self):
+    def add_input(self) -> None:
         self.num_input_positions += 1
 
     def initialize_knot_slots(self, parents):
