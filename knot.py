@@ -83,4 +83,3 @@ class Knot:
             rotate(self.pos, point, angle)
         for point in self.output_positions:
             rotate(self.pos, point, angle)
-

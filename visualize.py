@@ -7,15 +7,23 @@ import pandas as pd
 from copy import deepcopy
 
 
+def update_layout(fig):
+    fig.update_layout(
+        scene = dict(aspectmode = "data", xaxis=dict(visible=False, showline=False, showgrid=False),
+                                          yaxis=dict(visible=False, showline=False, showgrid=False),
+                                          zaxis=dict(showline=False, showgrid=False, showticklabels=False),
+                                          zaxis_title=''))
+    fig.update_layout(showlegend=True)
+
+
 def plot_3d_strands(strands: list[Strand], save:bool):
     points = strands_to_dict_list(strands)
     df = pd.DataFrame(points)
 
     fig = px.line_3d(df, x='x', y='y', z='z', color="color", 
                      line_group="strand", color_discrete_map={0:"brown", 1:"chocolate"})
-
-    fig.update_layout(
-        scene = dict(aspectmode = "data", ))
+    update_layout(fig)
+    
     fig.show()
     if save:
         fig.write_html("renderings/sample.html")
@@ -68,8 +76,8 @@ def plot_3d_animated_strands(animation_steps: list[list[Strand]], save: bool):
 
     fig = px.line_3d(df, x='x', y='y', z='z', color="color", color_discrete_map={0:"brown", 1:"chocolate"},
                         animation_frame='animation_step', animation_group='strand', line_group="strand")
-    fig.update_layout(
-        scene = dict(aspectmode = "data", ))
+    update_layout(fig)
+    
     fig.show()
     if save:
         fig.write_html("renderings/sample_3d_animation.html")
@@ -88,17 +96,17 @@ def plot_animated_strands(strands, save):
         fig.write_html("renderings/sample_2d_animation.html")
 
 
-def calc_3d_robot_plane(strands:list[Strand], relative_time:float=0.3) -> list[list[Strand]]:
+def calc_3d_robot_plane(strands:list[Strand], relative_time:float=0.10) -> list[list[Strand]]:
     """ 
     relative_time: float between 0 and 1. starts 3d animation from that relative vertical position  
     """
     minz, maxz = min_max_z_from_strands(strands)
     # note: z is vertical component of 3d coordinate. time is -z because we weave top-down
     cut_threshold = maxz - (maxz-minz)*relative_time
-    steps = Arena.animation_steps
+
     slice_height = Arena.interpolate_steps_per_meter
     animation_steps = []
-    for i in range(steps):
+    for i in range(Arena.animation_steps):
         new_strands = []
         for strand in strands:
             # stop if animation has more steps then strand

@@ -60,10 +60,11 @@ class Strand:
 
 class Arena:
     """globally useful configs"""
+    animation_steps = 5
+    
     divide_steps = 1
     divide_knot_steps = 2
     interpolate_steps = 12
-    animation_steps = 150
     straight_braid_radius = 0.02
     knot_bundle_distance = 0.07
     knot_gridsize_y = 0.04

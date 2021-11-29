@@ -82,20 +82,21 @@ def interpolate_strands(strands, kind="cubic", step_size=0.01):
     
     # first get global max and minimum z value, in order to create global grid
     for strand in strands:
-        z = np.array(strand.z)
-        currentmin = round_step_size(min(z), step_size)
-        currentmax = round_step_size(max(z), step_size)
-        if minz == None or currentmin < minz:
-            minz = currentmin
-        if maxz == None or currentmax > maxz:
-            maxz = currentmax
+        if len(strand.z) > 0:
+            z = np.array(strand.z)
+            currentmin = round_step_size(min(z), step_size)
+            currentmax = round_step_size(max(z), step_size)
+            if minz == None or currentmin < minz:
+                minz = currentmin
+            if maxz == None or currentmax > maxz:
+                maxz = currentmax
     num_steps = (maxz-minz) / Arena.interpolate_steps_per_meter  # 0.005 is steps per meter
 
     global_z = np.linspace(minz, maxz, int(num_steps)) # global grid
     
     # interpolate along this grid (in the z interval in which the strand is defined)
     for strand in strands:
-        if len(strand.x)>0:
+        if len(strand.z)>0:
             x = np.array(strand.x)
             y = np.array(strand.y)
             z = np.array(strand.z)

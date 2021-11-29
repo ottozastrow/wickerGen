@@ -120,8 +120,10 @@ def count_connections(knots, down_links):
     return counter
 
 def generate_nice_sample_graph():
-    layer_radia = [1.2, 0.83 , 0.6, 0.66, 0.8, 0.9]
-    layer_heights = [2.4, 1.7, 1, 0.0, -1, -1.8]
+    f=1.0 # slim factor
+    #layer_radia = [0.9/f, 0.7/f , 0.53/f, 0.64/f, 0.55/f, 0.64/f, 0.55/f]  # square
+    layer_radia = [0.78/f, 0.72/f , 0.55/f, 0.5/f, 0.53/f, 0.56/f, 0.66/f]  # round
+    layer_heights = [2.2, 1.8, 1, 0.0, -1, -1.8, -2.6]
 
     num_elements = 3
 

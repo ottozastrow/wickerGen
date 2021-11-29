@@ -31,14 +31,17 @@ parser.add_argument('--showcombined', action='store_true',
 
 parser.add_argument('--smallmodel', action='store_true',
                     help='plots smaller model')
-
 parser.add_argument('--save_to_file', action='store_true',
                     help='saves in html file')
 parser.add_argument('--obj_path', type=str, default=None,
                     help='saves in html file')
+parser.add_argument('--animatesteps', type=int, default=50,
+                    help='number of frames for animation')
 
 
 args = parser.parse_args()
+Arena.animation_steps = args.animatesteps
+
 if __name__ =="__main__":
     logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
@@ -71,8 +74,6 @@ if __name__ =="__main__":
 
     if args.showcombined:
         animated_strands_3d = calc_3d_robot_plane(strands)
-        # for strands in animated_strands_3d:
-        #     strands = interpolate_strands(strands)
         plot_3d_animated_strands(animated_strands_3d, save=args.save_to_file)
 
         
