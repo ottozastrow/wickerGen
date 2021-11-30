@@ -33,37 +33,32 @@ class Knot:
         """inputs and output positions are arranged in a circle around the knot center
         if the number of connections is uneven we add a center position
         """
+        self.input_positions = []
+        self.output_positions = []
+
+        self.num_input_positions = len(parents)
+        self.num_positions = max(self.num_input_positions, self.num_output_positions)
+
         if self.knottype is KnotType.startknot:
-            self.output_bundles = [generate_strands(self.num_strands)]
-            self.output_positions = [self.pos]
-            self.num_input_positions = 1
-            self.num_positions = self.num_input_positions
-            self.height = 0
-
+            self.output_bundles = [generate_strands(self.num_strands) for i in range(self.num_positions)]
         else:
-            self.num_input_positions = len(parents)
-            self.num_positions = max(self.num_input_positions, self.num_output_positions)
-
             self.output_bundles = [None for i in range(self.num_positions)]
-            self.height = Arena.knot_cycle_height * len(parents) * 2
-            self.input_positions = []
-            self.output_positions = []
+        self.height = Arena.knot_cycle_height * len(parents) * 2
+        
+        # add circular positions
+        if self.num_positions > 1:
+            knot_positions = self.num_positions -1
+            self.input_positions += generate_circular_positions(self.pos, knot_positions, self.pos.z + self.height/2 * 1.2, # 1.2 is nasty hack
+                                                                Arena.knot_bundle_distance, 0)
+            self.output_positions += generate_circular_positions(self.pos, knot_positions, self.pos.z - self.height/2, 
+                                                                Arena.knot_bundle_distance, 0)
+        # add center position
+        self.input_positions.append(Pos(self.pos.x, self.pos.y, self.pos.z + self.height/2 * 1.2))  # 1.2 is nasty hack
+        self.output_positions.append(Pos(self.pos.x, self.pos.y, self.pos.z - self.height/2))
 
-            
-            # add circular positions
-            if self.num_positions != 1:
-                knot_positions = self.num_positions -1
-                self.input_positions += generate_circular_positions(self.pos, knot_positions, self.pos.z + self.height/2 * 1.2, 
-                                                                    Arena.knot_bundle_distance, 0)
-                self.output_positions += generate_circular_positions(self.pos, knot_positions, self.pos.z - self.height/2, 
-                                                                    Arena.knot_bundle_distance, 0)
-            # add center position
-            self.input_positions.append(Pos(self.pos.x, self.pos.y, self.pos.z + self.height/2 * 1.2))
-            self.output_positions.append(Pos(self.pos.x, self.pos.y, self.pos.z - self.height/2))
-
-        self.input_bundles = [None for i in range(self.num_positions)]      
-        self.inputs_used = [False for i in range(self.num_positions)]
-        self.outputs_used = [False for i in range(self.num_positions)]
+        self.input_bundles = [None for i in range(self.num_input_positions)]      
+        self.inputs_used = [False for i in range(self.num_input_positions)]
+        self.outputs_used = [False for i in range(self.num_output_positions)]
 
     def align_orientation(self, parents):
         """orientation of knot is made dependant on parents"""
@@ -84,7 +79,6 @@ class Knot:
         angle += np.pi/2
         
         self.angle = angle
-
         for point in self.input_positions:
             rotate(self.pos, point, angle)
         for point in self.output_positions:

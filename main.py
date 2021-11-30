@@ -28,6 +28,8 @@ parser.add_argument('--animate', action='store_true',
                     help='plots 2d animation of strand movement')
 parser.add_argument('--showcombined', action='store_true',
                     help='plots 3d model and robot floor')
+parser.add_argument('--showgraph', action='store_true',
+                    help='shows graph network before weaving')
 
 parser.add_argument('--smallmodel', action='store_true',
                     help='plots smaller model')
@@ -52,9 +54,12 @@ if __name__ =="__main__":
         links, startknots, knots = generate_nice_sample_graph()
 
     for knot in knots:
-        parents = [knots[id] for id in links[1][knot.id]]
+        parents = [get_knot_by_id(id, knots) for id in links[1][knot.id]]
         knot.initialize_knot_slots(parents)
         knot.align_orientation(parents)
+
+    if args.showgraph:
+        plot_graph(knots, links)
 
     weave_graph(links, startknots, knots)
 

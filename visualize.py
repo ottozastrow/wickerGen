@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from graph import count_connections
+from graph import count_connections, get_knot_by_id
 from util_classes import *
 from utils import *
 import plotly.express as px
@@ -81,6 +81,29 @@ def plot_3d_animated_strands(animation_steps: list[list[Strand]], save: bool):
     fig.show()
     if save:
         fig.write_html("renderings/sample_3d_animation.html")
+
+
+def plot_graph(knots, links):
+    links_down, links_up = links
+    counter = 0
+    edges_x, edges_z, edges_y, line_group = [], [], [], []
+    for index_knot_i in range(len(links_down)):
+        for index_knot_j in links_down[index_knot_i]:
+            knot_i = get_knot_by_id(index_knot_i, knots)
+            knot_j = get_knot_by_id(index_knot_j, knots)
+            edges_x += [knot_i.pos.x, knot_j.pos.x]
+            edges_y += [knot_i.pos.y, knot_j.pos.y]
+            edges_z += [knot_i.pos.z, knot_j.pos.z]
+            line_group += [counter, counter]
+            counter += 1
+
+    df = pd.DataFrame(list(zip(edges_x, edges_y, edges_z, line_group)), columns =['x', 'y', "z", "line_group"])
+    
+
+    fig = px.line_3d(df, x='x', y='y', z='z', line_group="line_group")
+    # update_layout(fig)
+    
+    fig.show()
 
 
 def plot_animated_strands(strands, save):

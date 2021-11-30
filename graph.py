@@ -15,10 +15,9 @@ def choose_parent_child_link(parent:Knot, child:Knot):
     selected_outpos = None
     selected_outpos_i = None
     selected_inpos_i = None
-
-    for outpos_i in range(len(parent.output_positions)):
+    for outpos_i in range(parent.num_output_positions):
         outpos = parent.output_positions[outpos_i]
-        for inpos_i in range(len(child.input_positions)):
+        for inpos_i in range(child.num_input_positions):
             inpos = child.input_positions[inpos_i]
             dist = np.linalg.norm(outpos.np() - inpos.np())
 
@@ -36,6 +35,11 @@ def choose_parent_child_link(parent:Knot, child:Knot):
                     
                     smallest_dist = dist
     if selected_inpos is None:
+        print(parent.pos, child.pos)
+        print([pos for pos in parent.output_positions])
+        print([pos for pos in child.input_positions])
+        print([child.inputs_used])
+        print([parent.outputs_used])
         raise Exception("didn't find input position")
     if selected_outpos is None:
         raise Exception("didn't find output position")
@@ -77,22 +81,24 @@ def weave_graph(links, startknots, knots):
                      ("to many used outputs at a knot%d %d %b", len(children), len(parent.output_positions), \
                      parent.knottype==KnotType.startknot)
             logging.debug("weaving for %d", parent.id)
-
+            print("new parent")
             for child in children:
+                print(child.id)
                 if child not in next_knots:
                     next_knots.append(child)
             
-                selected_outpos_i, selected_inpos_i, \
-                    selected_outpos, selected_inpos = choose_parent_child_link(parent, child)
+                if True: # sum(child.inputs_used) < child.num_input_positions:
+                    selected_outpos_i, selected_inpos_i, \
+                        selected_outpos, selected_inpos = choose_parent_child_link(parent, child)
                 
-                # only draw bundle if preceding knots were already drawn 
-                if parent.output_bundles[selected_outpos_i] is not None:
-                    weave_straight_new(
-                        parent.output_bundles[selected_outpos_i], 
-                        selected_outpos, selected_inpos, parent.angle, child.angle)
-                    child.input_bundles[selected_inpos_i] = parent.output_bundles[selected_outpos_i]
-                    child.inputs_used[selected_inpos_i] = True
-                    parent.outputs_used[selected_outpos_i] = True
+                    # only draw bundle if preceding knots were already drawn 
+                    if parent.output_bundles[selected_outpos_i] is not None:
+                        weave_straight_new(
+                            parent.output_bundles[selected_outpos_i], 
+                            selected_outpos, selected_inpos, parent.angle, child.angle)
+                        child.input_bundles[selected_inpos_i] = parent.output_bundles[selected_outpos_i]
+                        child.inputs_used[selected_inpos_i] = True
+                        parent.outputs_used[selected_outpos_i] = True
 
         if len(next_knots) == 0:
             stop = True
@@ -109,9 +115,9 @@ def weave_graph(links, startknots, knots):
                 
                 weave_knot(knot)
         next_knots = []
-    
 
-def add_link(knots, links, parent, child):
+
+def add_link(links, parent, child):
     links_down, links_up = links  
     links_down[parent.id].append(child.id)
     links_up[child.id].append(parent.id)
@@ -145,9 +151,9 @@ def generate_circular_knots(num_knots:int,
 
 def generate_nice_sample_graph():
     f=1.0 # slim factor
-    #layer_radia = [0.9/f, 0.7/f , 0.53/f, 0.64/f, 0.55/f, 0.64/f, 0.55/f]  # square
-    layer_radia = [0.78/f, 0.72/f , 0.55/f, 0.5/f, 0.53/f, 0.56/f, 0.66/f]  # round
-    layer_heights = [2.2, 1.8, 1, 0.0, -1, -1.8, -2.6]
+    #layer_radia = [0.9/f, 0.7/f , 0.53/f, 0.64/f, 0.55/f, 0.64/f]  # square
+    layer_radia = [0.78/f, 0.72/f , 0.55/f, 0.5/f, 0.53/f, 0.56/f]  # round
+    layer_heights = [2.5, 1.8, 1, 0.0, -1, -1.8]
 
     num_elements = 3
 
@@ -166,8 +172,10 @@ def generate_nice_sample_graph():
                                          KnotType.startknot, 8,
                                          angle_from_circle_slot(num_elements*2, 0.0))
 
-    startknots = start_knots_diagonal + start_knots_vertical
+    center_knots = [Knot(KnotType.startknot, Pos(0,0,h)) for h in layer_heights]
+    startknots = start_knots_diagonal + start_knots_vertical + [center_knots[0]]
     knots += startknots
+    knots += center_knots
 
     
     for l in range(1, len(layer_radia)):
@@ -187,6 +195,7 @@ def generate_nice_sample_graph():
                 parent1 = start_knots_diagonal[(el_id*2)%(num_elements*2)]
                 parent2 = start_knots_diagonal[(el_id*2+1)%(num_elements*2)]
                 parent3 = start_knots_vertical[(el_id*2+1)%(num_elements*2)]
+            
                 
             elif l==2:
                 parent1 = layers[l-1][(el_id+1)%(num_elements)]
@@ -197,11 +206,17 @@ def generate_nice_sample_graph():
                 parent1 = layers[l-1][(el_id+1)%(num_elements)]
                 parent2 = layers[l-1][(el_id)%(num_elements)]
                 parent3 = layers[l-2][(el_id+1) % num_elements]
+            
+            # if l%2:
+            #     add_link(links, center_knots[l-1], knot)
+            # else:
+            #     add_link(links, layers[l-1][el_id], center_knots[l])
 
-
-            add_link(knots, links, parent1, knot)
-            add_link(knots, links, parent2, knot)
-            add_link(knots, links, parent3, knot)
+                
+            add_link(links, parent1, knot)
+            add_link(links, parent2, knot)
+            add_link(links, parent3, knot)
+        add_link(links, center_knots[l-1], center_knots[l])
     
     return links, startknots, knots
 
@@ -235,18 +250,18 @@ def generate_sample_graph():
 
     links = defaultdict(list), defaultdict(list)
 
-    add_link(knots, links, startknots[0],k1)
-    add_link(knots, links, startknots[1],k1)
-    add_link(knots, links, startknots[8],k1)
-    add_link(knots, links, startknots[2],k2)
-    add_link(knots, links, startknots[3],k2)
-    add_link(knots, links, k1, k4)
-    add_link(knots, links, k1, k3)
-    add_link(knots, links, k2, k4)
-    add_link(knots, links, startknots[6], k3)
-    add_link(knots, links, k3, k5)
-    add_link(knots, links, k4, k5)
-    add_link(knots, links, k1,k5)
+    add_link(links, startknots[0],k1)
+    add_link(links, startknots[1],k1)
+    add_link(links, startknots[8],k1)
+    add_link(links, startknots[2],k2)
+    add_link(links, startknots[3],k2)
+    add_link(links, k1, k4)
+    add_link(links, k1, k3)
+    add_link(links, k2, k4)
+    add_link(links, startknots[6], k3)
+    add_link(links, k3, k5)
+    add_link(links, k4, k5)
+    add_link(links, k1,k5)
 
     return links, startknots, knots
 
@@ -263,11 +278,11 @@ def generate_knot_graph(inputs:int=2):
     links = defaultdict(list), defaultdict(list)  # will return [] instead of key error
 
     for i in range(inputs):
-        add_link(knots, links, top_knots[i], middle_knot)
-        # add_link(knots, links, middle_knot, endknots[i])
-    add_link(knots, links, middle_knot_top, middle_knot)
+        add_link(links, top_knots[i], middle_knot)
+        # add_link(links, middle_knot, endknots[i])
+    add_link(links, middle_knot_top, middle_knot)
     for i in range(inputs):
-        add_link(knots, links, middle_knot, endknots[i])
+        add_link(links, middle_knot, endknots[i])
     
     return links, startknots, knots
 
@@ -280,6 +295,6 @@ def strands_from_graph(startknots):
             strands += bundle
     
     # make strands smooth by interpolating space in between
-    interpolate_strands(strands, kind="cubic", step_size=0.005)
+    # interpolate_strands(strands, kind="cubic", step_size=0.005)
 
     return strands
