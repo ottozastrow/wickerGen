@@ -1,9 +1,10 @@
 import logging
 from collections import defaultdict
+from os import EX_CANTCREAT
 
 from weaving import *
 from knot import Knot
-from utils import interpolate_strands
+from utils import interpolate_strands, angle_from_circle_slot
 
 
 def choose_parent_child_link(parent:Knot, child:Knot):
@@ -22,9 +23,9 @@ def choose_parent_child_link(parent:Knot, child:Knot):
             dist = np.linalg.norm(outpos.np() - inpos.np())
 
             # nasty hack to align vertical strands correctly. only works for knotsize 3
-            if outpos_i==1:
-                if inpos_i !=1:
-                    dist *= 4
+            if outpos_i==len(parent.output_positions):
+                if inpos_i !=len(parent.output_positions):
+                    dist *= 5
             
             if child.inputs_used[inpos_i] is False and parent.outputs_used[outpos_i] is False:
                 if smallest_dist is None or dist<smallest_dist:
@@ -45,6 +46,11 @@ def choose_parent_child_link(parent:Knot, child:Knot):
     return selected_outpos_i, selected_inpos_i, selected_outpos, selected_inpos
     
 
+def get_knot_by_id(id, knots):
+    for knot in knots:
+        if knot.id == id:
+            return knot
+    raise Exception("Knot id not found")
 
 def weave_graph(links, startknots, knots):
     """
@@ -65,8 +71,8 @@ def weave_graph(links, startknots, knots):
     stop = False
     while not stop:
         for parent in current_set:
+            children = [get_knot_by_id(id, knots) for id in links_down[parent.id]]
             
-            children = [knots[i] for i in links_down[parent.id]]
             assert len(children) <= len(parent.output_positions), \
                      ("to many used outputs at a knot%d %d %b", len(children), len(parent.output_positions), \
                      parent.knottype==KnotType.startknot)
@@ -119,6 +125,24 @@ def count_connections(knots, down_links):
         counter += len(down_links[id])
     return counter
 
+
+def generate_circular_knots(num_knots:int, 
+                            z_position:float, 
+                            radius:float, 
+                            knottype, num_strands:int,
+                            angle_offset:float) -> list[Knot]:
+    knots = []
+    angles = np.linspace(0, 2*np.pi -2*np.pi/num_knots, num_knots)
+    for el_id in range(num_knots):
+        angles_current = angles + angle_from_circle_slot(num_knots, angle_offset)
+
+        x = radius * cos(angles_current[el_id])
+        y = radius * sin(angles_current[el_id])
+        knot = Knot(knottype, Pos(x,y,z_position), num_strands)
+        knots.append(knot)
+    return knots
+
+
 def generate_nice_sample_graph():
     f=1.0 # slim factor
     #layer_radia = [0.9/f, 0.7/f , 0.53/f, 0.64/f, 0.55/f, 0.64/f, 0.55/f]  # square
@@ -129,40 +153,28 @@ def generate_nice_sample_graph():
 
     layers = [[] for i in range(len(layer_radia))]
     knots = []
-    startknots = []
     links = defaultdict(list), defaultdict(list)  # will return [] instead of key error
 
     
     layer_radius = layer_radia[0]
-    angles = np.linspace(0, 2*np.pi -2*np.pi/(num_elements*2), num_elements*2)
-    for el_id in range(num_elements*2):
-        angles_current = angles + 2*np.pi / (num_elements*2) / 2
+    start_knots_diagonal = generate_circular_knots(num_elements*2, layer_heights[0], layer_radia[0], 
+                                         KnotType.startknot, 4,
+                                         angle_from_circle_slot(num_elements*2, 0.5))
+    layers[0] = start_knots_diagonal
 
-        x = layer_radius * cos(angles_current[el_id])
-        y = layer_radius * sin(angles_current[el_id])
-        knot = Knot(KnotType.startknot, Pos(x,y,layer_heights[0]))
-        startknots.append(knot)
-        knots.append(knot)
-        layers[0].append(knot)
+    start_knots_vertical = generate_circular_knots(num_elements*2, layer_heights[0], layer_radia[0], 
+                                         KnotType.startknot, 8,
+                                         angle_from_circle_slot(num_elements*2, 0.0))
 
-    # straight startknots
-    straight_start_knots = []
-    angles = np.linspace(0, 2*np.pi -2*np.pi/(num_elements*2), num_elements*2)
-    for el_id in range(num_elements*2):
-        x = layer_radius * cos(angles[el_id])
-        y = layer_radius * sin(angles[el_id])
-        knot = Knot(KnotType.startknot, Pos(x,y,layer_heights[0]), num_strands=8)
-        startknots.append(knot)
-        knots.append(knot)
-        straight_start_knots.append(knot)
+    startknots = start_knots_diagonal + start_knots_vertical
+    knots += startknots
 
     
     for l in range(1, len(layer_radia)):
         layer_radius = layer_radia[l]
-
         angles = np.linspace(0, 2*np.pi -2*np.pi/num_elements, num_elements)
         for el_id in range(num_elements):
-            angles_current = angles + (l)*2*np.pi / num_elements / 2
+            angles_current = angles + angle_from_circle_slot(num_elements, l / 2)
             x = layer_radius * cos(angles_current[el_id])
             y = layer_radius * sin(angles_current[el_id])
             knottype = [KnotType.move2, KnotType.move4, KnotType.move1][el_id%3]
@@ -170,25 +182,26 @@ def generate_nice_sample_graph():
             knot = Knot(knottype, Pos(x,y,layer_heights[l]))
             knots.append(knot)
             layers[l].append(knot)
+
             if l==1:
-                parent1 = layers[l-1][(el_id*2)%(num_elements*2)]
-                parent2 = layers[l-1][(el_id*2+1)%(num_elements*2)]
-                parent3 = straight_start_knots[(el_id*2+1)%(num_elements*2)]
+                parent1 = start_knots_diagonal[(el_id*2)%(num_elements*2)]
+                parent2 = start_knots_diagonal[(el_id*2+1)%(num_elements*2)]
+                parent3 = start_knots_vertical[(el_id*2+1)%(num_elements*2)]
                 
             elif l==2:
                 parent1 = layers[l-1][(el_id+1)%(num_elements)]
                 parent2 = layers[l-1][(el_id)%(num_elements)]
-                parent3 = straight_start_knots[(el_id*2+2)%(num_elements*2)]
+                parent3 = start_knots_vertical[(el_id*2+2)%(num_elements*2)]
 
             else: # >2
                 parent1 = layers[l-1][(el_id+1)%(num_elements)]
                 parent2 = layers[l-1][(el_id)%(num_elements)]
                 parent3 = layers[l-2][(el_id+1) % num_elements]
 
+
             add_link(knots, links, parent1, knot)
             add_link(knots, links, parent2, knot)
             add_link(knots, links, parent3, knot)
-
     
     return links, startknots, knots
 
@@ -237,9 +250,27 @@ def generate_sample_graph():
 
     return links, startknots, knots
 
-def generate_prototype_graph():
 
-    startknot_positions = np.meshgrid(np.linspace())
+def generate_knot_graph(inputs:int=2):
+    top_knots = generate_circular_knots(inputs, 1.6, 0.7, KnotType.startknot, 4, 0)
+    middle_knot_top = Knot(KnotType.startknot, Pos(0,0,1.6), 6)
+    middle_knot = Knot(KnotType.move2, Pos(0,0,0.8))
+    middle_knot_bottom = Knot(KnotType.move2, Pos(0,0,0.0))
+    endknots = generate_circular_knots(inputs, 0, 0.7, KnotType.move2, 4, 0)
+
+    startknots = top_knots + [middle_knot_top]
+    knots = startknots + [middle_knot] + endknots
+    links = defaultdict(list), defaultdict(list)  # will return [] instead of key error
+
+    for i in range(inputs):
+        add_link(knots, links, top_knots[i], middle_knot)
+        # add_link(knots, links, middle_knot, endknots[i])
+    add_link(knots, links, middle_knot_top, middle_knot)
+    for i in range(inputs):
+        add_link(knots, links, middle_knot, endknots[i])
+    
+    return links, startknots, knots
+
 
 
 def strands_from_graph(startknots):

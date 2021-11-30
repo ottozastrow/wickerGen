@@ -56,8 +56,8 @@ def calc_relative_strand_movement(strand, i, num_slots, start_angle):
     offset_angle = np.pi * 2 / num_slots / 2  # move half a slot forward
     if i%2:
         offset_angle *= -1
-    x_inner,y_inner = circle_points(num_slots, start_angle + offset_angle, braid_radius * 0.6)
-    x_outer,y_outer = circle_points(num_slots, start_angle + offset_angle, braid_radius)
+    x_inner,y_inner = circle_points(num_slots, start_angle + offset_angle, braid_radius * 0.65)
+    x_outer,y_outer = circle_points(num_slots, start_angle + offset_angle, braid_radius * 1.25)
 
     slot = strand.slot
 
@@ -97,10 +97,10 @@ def weave_knot(knot):
         strands += ib
         bundle_sizes.append(len(ib))
 
-    start =  knot.input_positions[1]
-    start.z -= knot.height / 5
-    end = knot.output_positions[1]
-    end.z += knot.height / 5
+    start = Pos(knot.pos.x, knot.pos.y, knot.pos.z)
+    end = Pos(knot.pos.x, knot.pos.y, knot.pos.z)
+    start.z += knot.height / 2
+    end.z -= knot.height / 2
     angle = -np.pi / 2
     weave_straight_new(strands, start, end, knot.angle + angle, knot.angle + angle, weave_cycles=2)
 
@@ -108,9 +108,9 @@ def weave_knot(knot):
     counter = 0
     for i in range(len(bundle_sizes)):
         current_strands = []
-        for j in range(bundle_sizes[i]):                
+        for j in range(bundle_sizes[i]): 
             current_strand = strands[counter]
-            strand.slot = j
+            current_strand.slot = j
             current_strands.append(current_strand)
             counter += 1
         knot.output_bundles[i] = current_strands

@@ -75,6 +75,28 @@ def points_list_from_strand_xyz(strand) -> list[list[float]]:
         points.append([strand.x[i], strand.y[i], strand.z[i]])
     return points
 
+def angle_from_circle_slot(total_slots, target_slot) -> float:
+    """helper to compute angle offsets for elements arranged in a circle"""
+    return 2 * np.pi / total_slots * target_slot
+
+
+def generate_circular_positions(center:Pos,
+                            num_positions:int, 
+                            z_position:float, 
+                            radius:float, 
+                            angle_offset:float) -> list[Pos]:
+    positions = []
+    angles = np.linspace(0, 2*np.pi -2*np.pi/num_positions, num_positions)
+    for el_id in range(num_positions):
+        angles_current = angles + angle_from_circle_slot(num_positions, angle_offset)
+
+        x = radius * cos(angles_current[el_id])
+        y = radius * sin(angles_current[el_id])
+        knot = Pos(x + center.x, y + center.y, z_position)
+        positions.append(knot)
+    return positions
+
+
 
 
 def interpolate_strands(strands, kind="cubic", step_size=0.01):

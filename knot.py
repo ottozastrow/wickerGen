@@ -1,6 +1,6 @@
 from numpy import arctan
 from util_classes import *
-from utils import rotate, generate_strands
+from utils import rotate, generate_strands, generate_circular_positions
 
 
 class Knot:
@@ -30,6 +30,9 @@ class Knot:
 
     def initialize_knot_slots(self, parents):
         """initialize knot slots after all connections are known"""
+        """inputs and output positions are arranged in a circle around the knot center
+        if the number of connections is uneven we add a center position
+        """
         if self.knottype is KnotType.startknot:
             self.output_bundles = [generate_strands(self.num_strands)]
             self.output_positions = [self.pos]
@@ -43,18 +46,21 @@ class Knot:
 
             self.output_bundles = [None for i in range(self.num_positions)]
             self.height = Arena.knot_cycle_height * len(parents) * 2
-            self.output_positions = []
             self.input_positions = []
-        
-            x_offset = - Arena.knot_bundle_distance * self.num_positions / 2
-            for i in range(self.num_positions):
-                self.input_positions.append(
-                        Pos(self.pos.x + x_offset + i*Arena.knot_bundle_distance, self.pos.y, self.pos.z + self.height/2))
+            self.output_positions = []
+
             
-            for i in range(self.num_positions):
-                self.output_positions.append(
-                        Pos(self.pos.x + x_offset + i*Arena.knot_bundle_distance, self.pos.y, self.pos.z - self.height/2))
-        
+            # add circular positions
+            if self.num_positions != 1:
+                knot_positions = self.num_positions -1
+                self.input_positions += generate_circular_positions(self.pos, knot_positions, self.pos.z + self.height/2 * 1.2, 
+                                                                    Arena.knot_bundle_distance, 0)
+                self.output_positions += generate_circular_positions(self.pos, knot_positions, self.pos.z - self.height/2, 
+                                                                    Arena.knot_bundle_distance, 0)
+            # add center position
+            self.input_positions.append(Pos(self.pos.x, self.pos.y, self.pos.z + self.height/2 * 1.2))
+            self.output_positions.append(Pos(self.pos.x, self.pos.y, self.pos.z - self.height/2))
+
         self.input_bundles = [None for i in range(self.num_positions)]      
         self.inputs_used = [False for i in range(self.num_positions)]
         self.outputs_used = [False for i in range(self.num_positions)]

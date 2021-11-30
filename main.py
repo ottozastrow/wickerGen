@@ -46,7 +46,8 @@ if __name__ =="__main__":
     logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
     if args.smallmodel:
-        links, startknots, knots = generate_sample_graph()
+        # links, startknots, knots = generate_sample_graph()
+        links, startknots, knots = generate_knot_graph()
     else:
         links, startknots, knots = generate_nice_sample_graph()
 
