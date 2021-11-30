@@ -155,7 +155,7 @@ def generate_nice_sample_graph():
     layer_radia = [0.78/f, 0.72/f , 0.55/f, 0.5/f, 0.53/f, 0.56/f]  # round
     layer_heights = [2.5, 1.8, 1, 0.0, -1, -1.8]
 
-    num_elements = 3
+    num_elements = 4
 
     layers = [[] for i in range(len(layer_radia))]
     knots = []
@@ -207,15 +207,14 @@ def generate_nice_sample_graph():
                 parent2 = layers[l-1][(el_id)%(num_elements)]
                 parent3 = layers[l-2][(el_id+1) % num_elements]
             
-            # if l%2:
-            #     add_link(links, center_knots[l-1], knot)
-            # else:
-            #     add_link(links, layers[l-1][el_id], center_knots[l])
-
-                
+            if l%2:
+                add_link(links, center_knots[l-1], knot)
+            else:
+                add_link(links, layers[l-1][el_id], center_knots[l])
             add_link(links, parent1, knot)
             add_link(links, parent2, knot)
             add_link(links, parent3, knot)
+
         add_link(links, center_knots[l-1], center_knots[l])
     
     return links, startknots, knots
@@ -267,22 +266,29 @@ def generate_sample_graph():
 
 
 def generate_knot_graph(inputs:int=2):
-    top_knots = generate_circular_knots(inputs, 1.6, 0.7, KnotType.startknot, 4, 0)
-    middle_knot_top = Knot(KnotType.startknot, Pos(0,0,1.6), 6)
+    top_knots = generate_circular_knots(inputs, 1.6, 0.15, KnotType.startknot, 4, 0)
+    middle_knot_top = Knot(KnotType.startknot, Pos(0,0,1.6), 8)
     middle_knot = Knot(KnotType.move2, Pos(0,0,0.8))
     middle_knot_bottom = Knot(KnotType.move2, Pos(0,0,0.0))
-    endknots = generate_circular_knots(inputs, 0, 0.7, KnotType.move2, 4, 0)
+
+    endknots = generate_circular_knots(inputs, 0, 0.15, KnotType.move2, 4, 0)
+
+    endknots2 = generate_circular_knots(inputs, 0.8, 0.15, KnotType.move2, 4, 0)
 
     startknots = top_knots + [middle_knot_top]
-    knots = startknots + [middle_knot] + endknots
+    knots = startknots + [middle_knot, middle_knot_bottom] + endknots + endknots2
     links = defaultdict(list), defaultdict(list)  # will return [] instead of key error
 
     for i in range(inputs):
         add_link(links, top_knots[i], middle_knot)
-        # add_link(links, middle_knot, endknots[i])
-    add_link(links, middle_knot_top, middle_knot)
-    for i in range(inputs):
         add_link(links, middle_knot, endknots[i])
+        # add_link(links, top_knots[i], endknots2[i])
+        # add_link(links, endknots2[i], endknots[i])
+        # add_link(links, middle_knot_top, endknots2[i])
+        # add_link(links, endknots2[i], middle_knot_bottom)
+    add_link(links, middle_knot_top, middle_knot)
+    add_link(links, middle_knot, middle_knot_bottom)
+    
     
     return links, startknots, knots
 
@@ -295,6 +301,6 @@ def strands_from_graph(startknots):
             strands += bundle
     
     # make strands smooth by interpolating space in between
-    # interpolate_strands(strands, kind="cubic", step_size=0.005)
+    interpolate_strands(strands, kind="cubic", step_size=0.005)
 
     return strands

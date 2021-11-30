@@ -66,7 +66,7 @@ def strands_to_dict_list(strands: list[Strand], animation_step:int=0) -> list[di
     for i in range(len(strands)):
         strand = strands[i]
         for t in range(len(strand.x)):            
-            points.append({'y':strand.y[t], 'x':strand.x[t], 'z':round_step_size(strand.z[t], 0.001), 
+            points.append({'y':strand.y[t], 'x':strand.x[t], 'z':round_step_size(strand.z[t], 0.001), "size":0.05,
                             'color':i%2,  'strand':i, 'animation_step':animation_step})
     return points
 
@@ -101,6 +101,7 @@ def plot_graph(knots, links):
     
 
     fig = px.line_3d(df, x='x', y='y', z='z', line_group="line_group")
+    
     # update_layout(fig)
     
     fig.show()
@@ -110,10 +111,12 @@ def plot_animated_strands(strands, save):
     points = strands_to_dict_list(strands)
     df = pd.DataFrame(points)
 
-    fig = px.scatter(df, x='x', y='y', color="color", 
-                        animation_frame='z', animation_group='strand', height=1000, width=1000)          
+    fig = px.scatter(df, x='x', y='y', color="color", size="size", width=1000, height= 400,
+                        animation_frame='z', animation_group='strand',color_discrete_map={0:"brown", 1:"chocolate"})
+    fig.layout.updatemenus[0].buttons[0].args[1]["frame"]["duration"] = 30
     fig.update_layout(
         scene = dict(aspectmode = "data", ))
+    update_layout(fig)
     fig.show()
     if save:
         fig.write_html("renderings/sample_2d_animation.html")
