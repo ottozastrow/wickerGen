@@ -111,7 +111,7 @@ def plot_animated_strands(strands, save):
     points = strands_to_dict_list(strands)
     df = pd.DataFrame(points)
 
-    fig = px.scatter(df, x='x', y='y', color="color", size="size", width=900, height= 350, hover_name="text", 
+    fig = px.scatter(df, x='x', y='y', color="color", size="size", width=900, height= 900, hover_name="text", 
                         animation_frame='z', animation_group='strand',color_discrete_map={0:"brown", 1:"chocolate"})
     fig.layout.updatemenus[0].buttons[0].args[1]["frame"]["duration"] = 30
     fig.update_layout({

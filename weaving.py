@@ -35,7 +35,7 @@ def weave_straight_new(strands: list[Strand], start:Pos, end:Pos, start_angle, e
         adjusted_weave_height = calc_adjusted_weave_height(height, Arena.weave_cycle_height)
         weave_cycles = round(height/adjusted_weave_height)
 
-    adjusted_weave_height = adjusted_weave_height if not is_knot else Arena.knot_cycle_height
+        adjusted_weave_height = adjusted_weave_height if not is_knot else Arena.knot_cycle_height
     divide_steps = 2
     # absolute positions for bundles defined by interpolating between start and stop
     x0 = np.linspace(start.x, end.x, weave_cycles * divide_steps)
@@ -76,7 +76,7 @@ def calc_relative_strand_movement(strand, i, num_slots, start_angle):
 
     slot = strand.slot
 
-    if slot % 2:
+    if (slot+1) % 2:
         x.append(x_inner[(slot)%num_slots])
         y.append(y_inner[(slot)%num_slots])
 
@@ -156,10 +156,11 @@ def weave_knot(knot):
     if has_vertical_bundle:
         vertical_strands = ibs[-1]
         center_segments = [[] for i in range(num_splits)]
-
-        for i in range(len(ibs[-1])):
-            new_slot = int(i//(len(vertical_strands)/num_splits))
-            center_segments[new_slot].append(ibs[-1][i])
+        update_strand_slots_by_angle(vertical_strands)
+        for strand in vertical_strands:
+            
+            new_slot = int(strand.slot//(len(vertical_strands)/num_splits))
+            center_segments[new_slot].append(ibs[-1][strand.slot])
 
     # combine bundles and circle segments to large circle of strands
     for i in range(num_splits):
