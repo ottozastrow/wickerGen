@@ -66,7 +66,7 @@ def strands_to_dict_list(strands: list[Strand], animation_step:int=0) -> list[di
     for i in range(len(strands)):
         strand = strands[i]
         for t in range(len(strand.x)):            
-            points.append({'y':strand.y[t], 'x':strand.x[t], 'z':round_step_size(strand.z[t], 0.001), "size":0.05,
+            points.append({'y':strand.y[t], 'x':strand.x[t], 'z':round_step_size(strand.z[t], 0.001), "size":0.025,
                             'color':i,  'strand':i, 'animation_step':animation_step})
     return points
 

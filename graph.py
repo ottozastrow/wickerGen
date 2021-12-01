@@ -262,15 +262,15 @@ def generate_sample_graph():
     return links, startknots, knots
 
 
-def generate_knot_graph(inputs:int=3):
-    top_knots = generate_circular_knots(inputs, 1.6, 0.34, KnotType.startknot, 4, 0)
+def generate_knot_graph(inputs:int=4):
+    top_knots = generate_circular_knots(inputs, 1.6, 0.15, KnotType.startknot, 4, 0)
     middle_knot_top = Knot(KnotType.startknot, Pos(0,0,1.6), 6)
     middle_knot = Knot(KnotType.move2, Pos(0,0,0.8))
     middle_knot_bottom = Knot(KnotType.move2, Pos(0,0,0.0))
 
-    endknots = generate_circular_knots(inputs, 0, 0.34, KnotType.move2, 4, 0)
+    endknots = generate_circular_knots(inputs, 0, 0.15, KnotType.move2, 4, 0)
 
-    endknots2 = generate_circular_knots(inputs, 0.8, 0.35, KnotType.move2, 4, 0)
+    endknots2 = generate_circular_knots(inputs, 0.8, 0.15, KnotType.move2, 4, 0)
 
     startknots = top_knots + [middle_knot_top]
     knots = startknots + [middle_knot, middle_knot_bottom] + endknots + endknots2
