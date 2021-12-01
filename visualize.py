@@ -13,7 +13,7 @@ def update_layout(fig):
                                           yaxis=dict(visible=False, showline=False, showgrid=False),
                                           zaxis=dict(showline=False, showgrid=False, showticklabels=False),
                                           zaxis_title=''))
-    fig.update_layout(showlegend=True)
+    fig.update_layout(showlegend=False)
 
 
 def plot_3d_strands(strands: list[Strand], save:bool):
@@ -55,21 +55,6 @@ def animations_to_dataframe(animation_steps: list[list[Strand]]):
     return points
 
 
-def strands_to_dict_list(strands: list[Strand], animation_step:int=0) -> list[dict]:
-    """ 
-    creates list of dicts (that can be used for visualization) from list of strands
-    animation_step
-    output used to generate a dataframe
-    """
-    points = []
-    assert(len(strands[0].x) > 0), "this strand has no history"
-    for i in range(len(strands)):
-        strand = strands[i]
-        for t in range(len(strand.x)):            
-            points.append({'y':strand.y[t], 'x':strand.x[t], 'z':round_step_size(strand.z[t], 0.001), "size":0.025,
-                            'color':i,  'strand':i, 'animation_step':animation_step})
-    return points
-
 
 def plot_3d_animated_strands(animation_steps: list[list[Strand]], save: bool):
     df = animations_to_dataframe(animation_steps)
@@ -99,24 +84,47 @@ def plot_graph(knots, links):
 
     df = pd.DataFrame(list(zip(edges_x, edges_y, edges_z, line_group)), columns =['x', 'y', "z", "line_group"])
     
-
     fig = px.line_3d(df, x='x', y='y', z='z', line_group="line_group")
     
-    # update_layout(fig)
+    update_layout(fig)
     
     fig.show()
+
+
+def strands_to_dict_list(strands: list[Strand], animation_step:int=0) -> list[dict]:
+    """ 
+    creates list of dicts (that can be used for visualization) from list of strands
+    animation_step
+    output used to generate a dataframe
+    """
+    points = []
+    assert(len(strands[0].x) > 0), "this strand has no history"
+    for i in range(len(strands)):
+        strand = strands[i]
+        for t in range(len(strand.x)):            
+            points.append({'y':strand.y[t], 'x':strand.x[t], 'z':round_step_size(strand.z[t], 0.001), "size":0.017,
+                            'color':i%2,  'strand':i, 'animation_step':animation_step, 'text':strand.slot})
+    return points
 
 
 def plot_animated_strands(strands, save):
     points = strands_to_dict_list(strands)
     df = pd.DataFrame(points)
 
-    fig = px.scatter(df, x='x', y='y', color="color", size="size", width=1000, height= 1000,
+    fig = px.scatter(df, x='x', y='y', color="color", size="size", width=900, height= 350, hover_name="text", 
                         animation_frame='z', animation_group='strand',color_discrete_map={0:"brown", 1:"chocolate"})
     fig.layout.updatemenus[0].buttons[0].args[1]["frame"]["duration"] = 30
+    fig.update_layout({
+    'plot_bgcolor': 'rgba(0, 0, 0, 0)',
+    'paper_bgcolor': 'rgba(0, 0, 0, 0)',
+    })
     fig.update_layout(
-        scene = dict(aspectmode = "data", ))
-    update_layout(fig)
+        scene = dict(aspectmode = "data", ),showlegend=False,yaxis=dict(showgrid=False, visible=False), xaxis=dict(showgrid=False, visible=False))
+    # update_layout(fig)
+    fig.update_layout(showlegend=False)
+    fig.update_traces(
+    marker_coloraxis=None
+    )
     fig.show()
     if save:
         fig.write_html("renderings/sample_2d_animation.html")

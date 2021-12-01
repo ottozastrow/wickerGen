@@ -66,7 +66,7 @@ class Arena:
     divide_knot_steps = 2
     interpolate_steps = 12
     straight_braid_radius = 0.02
-    knot_bundle_distance = 0.04
+    knot_bundle_distance = 0.08
     knot_gridsize_y = 0.04
     knot_gridsize_x = 0.01
     weave_cycle_height = 0.06

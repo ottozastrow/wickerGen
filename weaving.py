@@ -6,6 +6,18 @@ from util_classes import *
 from knot import *
 import math
 
+def update_strand_slots_by_angle(strands):
+     if len(strands[0].x)>0:
+        points = np.zeros((len(strands), 2))
+        for i in range(len(strands)):
+            points[i, 0] = strands[i].x[-1]
+            points[i, 1] = strands[i].y[-1]
+
+        angles = -np.arctan2(points[:,0], points[:,1])
+        angle_indexes = np.argsort(angles)
+        for i in angle_indexes:
+            strands[i].slot = i
+
 
 def weave_straight_new(strands: list[Strand], start:Pos, end:Pos, start_angle, end_angle, weave_cycles=None, is_knot=False):
     logging.debug("started straight bundle from z=%.2f to z=%.2f", start.z, end.z)
@@ -14,7 +26,10 @@ def weave_straight_new(strands: list[Strand], start:Pos, end:Pos, start_angle, e
     assert(end.z < start.z), end
     height = start.z-end.z
     num_strands = len(strands)
-    
+
+    # assign circle slots from strand angle
+    update_strand_slots_by_angle(strands)
+
     # movement height is adjusted such that after N "weaves" the starting position is achieved
     if weave_cycles == None:
         adjusted_weave_height = calc_adjusted_weave_height(height, Arena.weave_cycle_height)
@@ -132,7 +147,6 @@ def weave_knot(knot):
     current_strand_count = 0
     bundle_sizes = []
     bundle_sizes = [len(ib) for ib in ibs]
-    print("start weaving knot")
     circle_segments = []
     num_splits = len(ibs)-1 if len(ibs)>2 else len(ibs)  # number of non vertical input bundles
     has_vertical_bundle = len(ibs)>2
@@ -147,7 +161,6 @@ def weave_knot(knot):
             new_slot = int(i//(len(vertical_strands)/num_splits))
             center_segments[new_slot].append(ibs[-1][i])
 
-        print([len( c) for c in center_segments], "ibslen")
     # combine bundles and circle segments to large circle of strands
     for i in range(num_splits):
         current_segment = []
@@ -158,8 +171,9 @@ def weave_knot(knot):
         for j in range(len(ib)):
             strand = ibs[i][j]
             new_slot = current_strand_count + j
-
             operation_map[new_slot] = strand.slot, i
+            strand.old_slot = strand.slot
+
             strand.slot=new_slot
             circle_segments.append(strand)
         current_strand_count += len(ib)
@@ -168,7 +182,7 @@ def weave_knot(knot):
             for j in range(len(center_segments[i])):
                 strand = center_segments[i][j]
                 new_slot = current_strand_count + j
-
+                strand.old_slot = strand.slot
                 operation_map[new_slot] = strand.slot, len(ibs)-1
                 strand.slot=new_slot
                 circle_segments.append(strand)
@@ -177,10 +191,54 @@ def weave_knot(knot):
     weave_cycles = 2
 
 
-    weave_straight_new(circle_segments, start, end, knot.angle + angle + np.pi/4, knot.angle + angle, \
-        weave_cycles=weave_cycles, is_knot=True)
+    weave_straight_new(circle_segments, start, end, knot.angle + angle + np.pi/4, knot.angle + angle, weave_cycles=weave_cycles)
+    # debug_slots(circle_segments, knot)
 
-    # # set ouput bundles
+
+    points = []
+    for i in range(len(circle_segments)):
+        x = circle_segments[i].x[-1]
+        y = circle_segments[i].y[-1]
+        points.append([x,y])
+    points = np.array(points)
+
+    already_moved_strands = []
+    knot.output_bundles = [[] for i in range(len(bundle_sizes))]
+
+    diagonal_bundle_sizes = bundle_sizes[:num_splits]
+    for i in range(num_splits):
+        pos = knot.output_positions[i]
+        pos = np.array([pos.x, pos.y])
+        distances = np.linalg.norm(pos - points, axis=-1)
+        closest_strand_indexes = np.argsort(distances)[:diagonal_bundle_sizes[i]]
+        for el in closest_strand_indexes:
+            knot.output_bundles[i].append(circle_segments[el])
+            already_moved_strands.append(circle_segments[el])
+        
+        for j in range(len(knot.output_bundles[i])):
+            strand.slot = j
+    
+    if has_vertical_bundle:
+        remaining_strands = []
+        angles = -np.arctan2(points[:,0], points[:,1])
+        angle_indexes = np.argsort(angles)
+        counter = 0
+        for i in angle_indexes:
+            if circle_segments[i] not in already_moved_strands:
+                remaining_strands.append(circle_segments[i])
+                circle_segments[i].slot = counter
+                counter += 1
+        knot.output_bundles[-1] = remaining_strands
+
+    # # # set ouput bundles
+    # splits = []
+    # counter = 0
+    # for i in range(len(circle_segments)):
+    #     if (i+1)%2:
+    #         strand.slot = circle_segments[i].slot
+    #     else:
+    #         strand.slot = circle_segments[strand.slot].slot
+
     # counter = 0
     # for i in range(len(bundle_sizes)):
     #     current_strands = []
@@ -190,16 +248,32 @@ def weave_knot(knot):
     #         current_strands.append(current_strand)
     #         counter += 1
     #     knot.output_bundles[i] = current_strands
-    # for i in range(num_splits):
+    # print(bundle_sizes)
+    
+    # for i in range(len(circle_segments)):
+    #     strand = circle_segments[i]
+    #     direction = (i%2) *2 -1
+    #     old_slot, bundle_index = operation_map[(i+direction * 0)%len(circle_segments)]
+    #     strand.slot = old_slot
+    #     knot.output_bundles[bundle_index].append(strand)
+
+    # # for i in knot.output_bundles:
+    #     debug_slots(i)
 
 
-    knot.output_bundles = [[] for i in range(len(bundle_sizes))]
-    for i in range(len(circle_segments)):
-        strand = circle_segments[i]
-        direction = (i%2) *2 -1
-        old_slot, bundle_index = operation_map[(strand.slot-direction * 1)%len(circle_segments)]
-        strand.slot = old_slot
-        knot.output_bundles[bundle_index].append(strand)
+def debug_slots(strands, knot):
+    import matplotlib.pyplot as plt
+    pointsx = [strand.x[-1] for strand in strands]
+    pointsy = [strand.y[-1] for strand in strands]
+    slots = [(strands[i].slot, strands[i].old_slot, i) for i in range(len(strands))]
+    fig, ax = plt.subplots()
+    ax.scatter(pointsx, pointsy)
+    for i, txt in enumerate(slots):
+        ax.annotate(txt, (pointsx[i], pointsy[i]))
+    for i in range(len(knot.output_bundles)):
+        pos = knot.output_positions[i]
+        ax.scatter(pos.x, pos.y)
+    plt.show()
 
 def weave_knot_triangle(knot):
     """
