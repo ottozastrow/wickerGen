@@ -7,24 +7,24 @@ from knot import *
 import math
 
 
-def weave_straight_new(strands: list[Strand], start:Pos, end:Pos, start_angle, end_angle, weave_cycles=None):
+def weave_straight_new(strands: list[Strand], start:Pos, end:Pos, start_angle, end_angle, weave_cycles=None, is_knot=False):
     logging.debug("started straight bundle from z=%.2f to z=%.2f", start.z, end.z)
 
     assert len(strands) > 0
     assert(end.z < start.z), end
     height = start.z-end.z
     num_strands = len(strands)
-
+    
     # movement height is adjusted such that after N "weaves" the starting position is achieved
     if weave_cycles == None:
         adjusted_weave_height = calc_adjusted_weave_height(height, Arena.weave_cycle_height)
         weave_cycles = round(height/adjusted_weave_height)
 
+    adjusted_weave_height = adjusted_weave_height if not is_knot else Arena.knot_cycle_height
     divide_steps = 2
     # absolute positions for bundles defined by interpolating between start and stop
     x0 = np.linspace(start.x, end.x, weave_cycles * divide_steps)
     y0 = np.linspace(start.y, end.y, weave_cycles * divide_steps)
-
 
     z = np.linspace(start.z, start.z - height, weave_cycles * divide_steps, endpoint=False)
 
@@ -104,7 +104,7 @@ def weave_knot_old(knot):
         strands += ib
         bundle_sizes.append(len(ib))
 
-    weave_straight_new(strands, start, end, knot.angle + angle, knot.angle + angle, weave_cycles=2)
+    weave_straight_new(strands, start, end, knot.angle + angle, knot.angle + angle, weave_cycles=2, is_knot=True)
 
     # set ouput bundles
     counter = 0
@@ -177,7 +177,8 @@ def weave_knot(knot):
     weave_cycles = 2
 
 
-    weave_straight_new(circle_segments, start, end, knot.angle + angle + np.pi/4, knot.angle + angle, weave_cycles=weave_cycles)
+    weave_straight_new(circle_segments, start, end, knot.angle + angle + np.pi/4, knot.angle + angle, \
+        weave_cycles=weave_cycles, is_knot=True)
 
     # # set ouput bundles
     # counter = 0

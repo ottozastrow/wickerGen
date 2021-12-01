@@ -149,10 +149,10 @@ def generate_circular_knots(num_knots:int,
 def generate_nice_sample_graph():
     f=1.0 # slim factor
     #layer_radia = [0.9/f, 0.7/f , 0.53/f, 0.64/f, 0.55/f, 0.64/f]  # square
-    layer_radia = [0.78/f, 0.72/f , 0.55/f, 0.5/f, 0.53/f, 0.56/f]  # round
-    layer_heights = [2.5, 1.8, 1, 0.0, -1, -1.8]
+    layer_radia = [1.11/f, 0.78/f , 0.55/f, 0.5/f, 0.53/f, 0.56/f, 0.6, 0.65, 0.72, 0.8]  # round
+    layer_heights = [2.5, 1.8, 1, 0.0, -1, -1.8, -2.6, -3.2, -4, -4.8]
 
-    num_elements = 4
+    num_elements = 5
 
     layers = [[] for i in range(len(layer_radia))]
     knots = []
@@ -204,15 +204,15 @@ def generate_nice_sample_graph():
                 parent2 = layers[l-1][(el_id)%(num_elements)]
                 parent3 = layers[l-2][(el_id+1) % num_elements]
             
-            if l%2:
-                add_link(links, center_knots[l-1], knot)
-            else:
-                add_link(links, layers[l-1][el_id], center_knots[l])
+            # if l%2:
+            #     add_link(links, center_knots[l-1], knot)
+            # else:
+            #     add_link(links, layers[l-1][el_id], center_knots[l])
             add_link(links, parent1, knot)
             add_link(links, parent2, knot)
             add_link(links, parent3, knot)
 
-        add_link(links, center_knots[l-1], center_knots[l])
+        # add_link(links, center_knots[l-1], center_knots[l])
     
     return links, startknots, knots
 
@@ -262,15 +262,15 @@ def generate_sample_graph():
     return links, startknots, knots
 
 
-def generate_knot_graph(inputs:int=4):
-    top_knots = generate_circular_knots(inputs, 1.6, 0.15, KnotType.startknot, 4, 0)
+def generate_knot_graph(inputs:int=3):
+    top_knots = generate_circular_knots(inputs, 1.6, 0.3, KnotType.startknot, 4, 0)
     middle_knot_top = Knot(KnotType.startknot, Pos(0,0,1.6), 6)
     middle_knot = Knot(KnotType.move2, Pos(0,0,0.8))
     middle_knot_bottom = Knot(KnotType.move2, Pos(0,0,0.0))
 
-    endknots = generate_circular_knots(inputs, 0, 0.15, KnotType.move2, 4, 0)
+    endknots = generate_circular_knots(inputs, 0, 0.3, KnotType.move2, 4, 0)
 
-    endknots2 = generate_circular_knots(inputs, 0.8, 0.15, KnotType.move2, 4, 0)
+    endknots2 = generate_circular_knots(inputs, 0.8, 0.3, KnotType.move2, 4, 0)
 
     startknots = top_knots + [middle_knot_top]
     knots = startknots + [middle_knot, middle_knot_bottom] + endknots + endknots2
