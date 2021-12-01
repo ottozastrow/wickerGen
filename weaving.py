@@ -82,7 +82,14 @@ def calc_relative_strand_movement(strand, i, num_slots, start_angle):
     return x,y
 
 
-def weave_knot(knot):
+def weave_knot_old(knot):
+    start = Pos(knot.pos.x, knot.pos.y, knot.pos.z)
+    end = Pos(knot.pos.x, knot.pos.y, knot.pos.z)
+    start.z += knot.height / 2
+    end.z -= knot.height / 2
+    angle = -np.pi / 2
+
+
     ibs = knot.input_bundles
     strands = []
     current_strand_count = 0
@@ -97,11 +104,6 @@ def weave_knot(knot):
         strands += ib
         bundle_sizes.append(len(ib))
 
-    start = Pos(knot.pos.x, knot.pos.y, knot.pos.z)
-    end = Pos(knot.pos.x, knot.pos.y, knot.pos.z)
-    start.z += knot.height / 2
-    end.z -= knot.height / 2
-    angle = -np.pi / 2
     weave_straight_new(strands, start, end, knot.angle + angle, knot.angle + angle, weave_cycles=2)
 
     # set ouput bundles
@@ -115,7 +117,88 @@ def weave_knot(knot):
             counter += 1
         knot.output_bundles[i] = current_strands
 
-    
+
+def weave_knot(knot):
+    """weaves circular knots without intersections"""
+    start = Pos(knot.pos.x, knot.pos.y, knot.pos.z)
+    end = Pos(knot.pos.x, knot.pos.y, knot.pos.z)
+    start.z += knot.height / 2
+    end.z -= knot.height / 2
+    angle = -np.pi / 2
+
+    # we assume that the vertical knot is the last one in the list (see knot class)
+    ibs = knot.input_bundles
+    strands = []
+    current_strand_count = 0
+    bundle_sizes = []
+    bundle_sizes = [len(ib) for ib in ibs]
+    print("start weaving knot")
+    circle_segments = []
+    num_splits = len(ibs)-1 if len(ibs)>2 else len(ibs)  # number of non vertical input bundles
+    has_vertical_bundle = len(ibs)>2
+    operation_map = {}  # records which slot went were. can be used for inverse operation at knot output
+
+    # split vertical bundle into num_splits parts. insert these inbetween the other bundles
+    if has_vertical_bundle:
+        vertical_strands = ibs[-1]
+        center_segments = [[] for i in range(num_splits)]
+
+        for i in range(len(ibs[-1])):
+            new_slot = int(i//(len(vertical_strands)/num_splits))
+            center_segments[new_slot].append(ibs[-1][i])
+
+        print([len( c) for c in center_segments], "ibslen")
+    # combine bundles and circle segments to large circle of strands
+    for i in range(num_splits):
+        current_segment = []
+        ib = ibs[i]
+        if ib is None:
+            ib = generate_strands(4) 
+            logging.debug("WARNING: unconnected knot")
+        for j in range(len(ib)):
+            strand = ibs[i][j]
+            new_slot = current_strand_count + j
+
+            operation_map[new_slot] = strand.slot, i
+            strand.slot=new_slot
+            circle_segments.append(strand)
+        current_strand_count += len(ib)
+        
+        if has_vertical_bundle:
+            for j in range(len(center_segments[i])):
+                strand = center_segments[i][j]
+                new_slot = current_strand_count + j
+
+                operation_map[new_slot] = strand.slot, len(ibs)-1
+                strand.slot=new_slot
+                circle_segments.append(strand)
+            current_strand_count += len(center_segments[i])
+        strands += ib
+    weave_cycles = 2
+
+
+    weave_straight_new(circle_segments, start, end, knot.angle + angle + np.pi/4, knot.angle + angle, weave_cycles=weave_cycles)
+
+    # # set ouput bundles
+    # counter = 0
+    # for i in range(len(bundle_sizes)):
+    #     current_strands = []
+    #     for j in range(bundle_sizes[i]): 
+    #         current_strand = circle_segments[counter]
+    #         current_strand.slot = j
+    #         current_strands.append(current_strand)
+    #         counter += 1
+    #     knot.output_bundles[i] = current_strands
+    # for i in range(num_splits):
+
+
+    knot.output_bundles = [[] for i in range(len(bundle_sizes))]
+    for i in range(len(circle_segments)):
+        strand = circle_segments[i]
+        direction = (i%2) *2 -1
+        old_slot, bundle_index = operation_map[(strand.slot-direction * 1)%len(circle_segments)]
+        strand.slot = old_slot
+        knot.output_bundles[bundle_index].append(strand)
 
 def weave_knot_triangle(knot):
     """

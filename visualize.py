@@ -67,7 +67,7 @@ def strands_to_dict_list(strands: list[Strand], animation_step:int=0) -> list[di
         strand = strands[i]
         for t in range(len(strand.x)):            
             points.append({'y':strand.y[t], 'x':strand.x[t], 'z':round_step_size(strand.z[t], 0.001), "size":0.05,
-                            'color':i%2,  'strand':i, 'animation_step':animation_step})
+                            'color':i,  'strand':i, 'animation_step':animation_step})
     return points
 
 
@@ -111,7 +111,7 @@ def plot_animated_strands(strands, save):
     points = strands_to_dict_list(strands)
     df = pd.DataFrame(points)
 
-    fig = px.scatter(df, x='x', y='y', color="color", size="size", width=1000, height= 400,
+    fig = px.scatter(df, x='x', y='y', color="color", size="size", width=1000, height= 1000,
                         animation_frame='z', animation_group='strand',color_discrete_map={0:"brown", 1:"chocolate"})
     fig.layout.updatemenus[0].buttons[0].args[1]["frame"]["duration"] = 30
     fig.update_layout(

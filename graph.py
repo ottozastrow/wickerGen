@@ -1,6 +1,5 @@
 import logging
 from collections import defaultdict
-from os import EX_CANTCREAT
 
 from weaving import *
 from knot import Knot
@@ -81,9 +80,7 @@ def weave_graph(links, startknots, knots):
                      ("to many used outputs at a knot%d %d %b", len(children), len(parent.output_positions), \
                      parent.knottype==KnotType.startknot)
             logging.debug("weaving for %d", parent.id)
-            print("new parent")
             for child in children:
-                print(child.id)
                 if child not in next_knots:
                     next_knots.append(child)
             
@@ -265,15 +262,15 @@ def generate_sample_graph():
     return links, startknots, knots
 
 
-def generate_knot_graph(inputs:int=2):
-    top_knots = generate_circular_knots(inputs, 1.6, 0.15, KnotType.startknot, 4, 0)
-    middle_knot_top = Knot(KnotType.startknot, Pos(0,0,1.6), 8)
+def generate_knot_graph(inputs:int=3):
+    top_knots = generate_circular_knots(inputs, 1.6, 0.34, KnotType.startknot, 4, 0)
+    middle_knot_top = Knot(KnotType.startknot, Pos(0,0,1.6), 6)
     middle_knot = Knot(KnotType.move2, Pos(0,0,0.8))
     middle_knot_bottom = Knot(KnotType.move2, Pos(0,0,0.0))
 
-    endknots = generate_circular_knots(inputs, 0, 0.15, KnotType.move2, 4, 0)
+    endknots = generate_circular_knots(inputs, 0, 0.34, KnotType.move2, 4, 0)
 
-    endknots2 = generate_circular_knots(inputs, 0.8, 0.15, KnotType.move2, 4, 0)
+    endknots2 = generate_circular_knots(inputs, 0.8, 0.35, KnotType.move2, 4, 0)
 
     startknots = top_knots + [middle_knot_top]
     knots = startknots + [middle_knot, middle_knot_bottom] + endknots + endknots2
