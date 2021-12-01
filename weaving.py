@@ -19,14 +19,13 @@ def update_strand_slots_by_angle(strands):
             strands[i].slot = i
 
 
-def weave_straight_new(strands: list[Strand], start:Pos, end:Pos, start_angle, end_angle, weave_cycles=None):
+def weave_straight_new(strands: list[Strand], start:Pos, end:Pos, start_angle, end_angle, weave_cycles=None, is_knot=False):
     logging.debug("started straight bundle from z=%.2f to z=%.2f", start.z, end.z)
 
     assert len(strands) > 0
     assert(end.z < start.z), end
     height = start.z-end.z
     num_strands = len(strands)
-
 
     # assign circle slots from strand angle
     update_strand_slots_by_angle(strands)
@@ -36,11 +35,11 @@ def weave_straight_new(strands: list[Strand], start:Pos, end:Pos, start_angle, e
         adjusted_weave_height = calc_adjusted_weave_height(height, Arena.weave_cycle_height)
         weave_cycles = round(height/adjusted_weave_height)
 
+        adjusted_weave_height = adjusted_weave_height if not is_knot else Arena.knot_cycle_height
     divide_steps = 2
     # absolute positions for bundles defined by interpolating between start and stop
     x0 = np.linspace(start.x, end.x, weave_cycles * divide_steps)
     y0 = np.linspace(start.y, end.y, weave_cycles * divide_steps)
-
 
     z = np.linspace(start.z, start.z - height, weave_cycles * divide_steps, endpoint=False)
 
@@ -77,7 +76,7 @@ def calc_relative_strand_movement(strand, i, num_slots, start_angle):
 
     slot = strand.slot
 
-    if slot % 2:
+    if (slot+1) % 2:
         x.append(x_inner[(slot)%num_slots])
         y.append(y_inner[(slot)%num_slots])
 
@@ -120,7 +119,7 @@ def weave_knot_old(knot):
         strands += ib
         bundle_sizes.append(len(ib))
 
-    weave_straight_new(strands, start, end, knot.angle + angle, knot.angle + angle, weave_cycles=2)
+    weave_straight_new(strands, start, end, knot.angle + angle, knot.angle + angle, weave_cycles=2, is_knot=True)
 
     # set ouput bundles
     counter = 0
@@ -157,10 +156,11 @@ def weave_knot(knot):
     if has_vertical_bundle:
         vertical_strands = ibs[-1]
         center_segments = [[] for i in range(num_splits)]
-
-        for i in range(len(ibs[-1])):
-            new_slot = int(i//(len(vertical_strands)/num_splits))
-            center_segments[new_slot].append(ibs[-1][i])
+        update_strand_slots_by_angle(vertical_strands)
+        for strand in vertical_strands:
+            
+            new_slot = int(strand.slot//(len(vertical_strands)/num_splits))
+            center_segments[new_slot].append(ibs[-1][strand.slot])
 
     # combine bundles and circle segments to large circle of strands
     for i in range(num_splits):

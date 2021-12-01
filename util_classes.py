@@ -70,7 +70,7 @@ class Arena:
     knot_gridsize_y = 0.04
     knot_gridsize_x = 0.01
     weave_cycle_height = 0.06
-    knot_cycle_height = 0.04
+    knot_cycle_height = 0.03
     strand_width = 0.004  # including some padding
 
     interpolate_steps_per_meter = 0.005
