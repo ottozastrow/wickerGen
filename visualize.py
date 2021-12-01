@@ -102,8 +102,8 @@ def strands_to_dict_list(strands: list[Strand], animation_step:int=0) -> list[di
     for i in range(len(strands)):
         strand = strands[i]
         for t in range(len(strand.x)):            
-            points.append({'y':strand.y[t], 'x':strand.x[t], 'z':round_step_size(strand.z[t], 0.001), "size":0.017,
-                            'color':i%2,  'strand':i, 'animation_step':animation_step, 'text':strand.slot})
+            points.append({'y':strand.y[t], 'x':strand.x[t], 'z':-round_step_size(strand.z[t], 0.001), "size":0.017,
+                            'color':str(i%2),  'strand':i, 'animation_step':animation_step})
     return points
 
 
@@ -111,20 +111,25 @@ def plot_animated_strands(strands, save):
     points = strands_to_dict_list(strands)
     df = pd.DataFrame(points)
 
-    fig = px.scatter(df, x='x', y='y', color="color", size="size", width=900, height= 350, hover_name="text", 
-                        animation_frame='z', animation_group='strand',color_discrete_map={0:"brown", 1:"chocolate"})
+    fig = px.scatter(df, x='x', y='y', color="color", size="size", color_continuous_scale=["black", "grey"],#width=900, height= 350,
+                     animation_frame='z', animation_group='strand',color_discrete_map={"0":"DarkSlateGrey", "1":"lightgrey"})
     fig.layout.updatemenus[0].buttons[0].args[1]["frame"]["duration"] = 30
-    fig.update_layout({
-    'plot_bgcolor': 'rgba(0, 0, 0, 0)',
-    'paper_bgcolor': 'rgba(0, 0, 0, 0)',
-    })
+    # white background
+    fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)', 'paper_bgcolor': 'rgba(0, 0, 0, 0)',})
     fig.update_layout(
-        scene = dict(aspectmode = "data", ),showlegend=False,yaxis=dict(showgrid=False, visible=False), xaxis=dict(showgrid=False, visible=False))
-    # update_layout(fig)
+        showlegend=False,
+        yaxis=dict(showgrid=False, visible=False), 
+        xaxis=dict(showgrid=False, visible=False))
+    fig.update_traces(marker=dict(
+                    line=dict(width=1,
+                    color='DarkSlateGrey')),
+                    selector=dict(mode='markers'))
+
+    fig.update_layout(scene = dict(aspectmode = "data", ))
+
+    fig.update_layout(autosize=True)
     fig.update_layout(showlegend=False)
-    fig.update_traces(
-    marker_coloraxis=None
-    )
+    fig.update_traces(marker_coloraxis=None)
     fig.show()
     if save:
         fig.write_html("renderings/sample_2d_animation.html")
