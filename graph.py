@@ -149,7 +149,7 @@ def generate_circular_knots(num_knots:int,
 def generate_nice_sample_graph():
     f=1.0 # slim factor
     #layer_radia = [0.9/f, 0.7/f , 0.53/f, 0.64/f, 0.55/f, 0.64/f]  # square
-    layer_radia = [0.78/f, 0.72/f , 0.55/f, 0.5/f, 0.53/f, 0.56/f]  # round
+    layer_radia = [0.7/f, 0.7/f , 0.52/f, 0.45/f, 0.52/f, 0.7/f]  # round
     layer_heights = [2.5, 1.8, 1, 0.0, -1, -1.8]
 
     num_elements = 4
@@ -204,15 +204,15 @@ def generate_nice_sample_graph():
                 parent2 = layers[l-1][(el_id)%(num_elements)]
                 parent3 = layers[l-2][(el_id+1) % num_elements]
             
-            if l%2:
-                add_link(links, center_knots[l-1], knot)
-            else:
-                add_link(links, layers[l-1][el_id], center_knots[l])
+            # if l%2:
+            #     add_link(links, center_knots[l-1], knot)
+            # else:
+            #     add_link(links, layers[l-1][el_id], center_knots[l])
             add_link(links, parent1, knot)
             add_link(links, parent2, knot)
             add_link(links, parent3, knot)
 
-        add_link(links, center_knots[l-1], center_knots[l])
+        # add_link(links, center_knots[l-1], center_knots[l])
     
     return links, startknots, knots
 
