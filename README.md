@@ -4,7 +4,7 @@ this tool can be used to generate 3d wicker patterns for building components. At
 The tool computes the pattern based on knot positions and knot connections which are given as input.
 
 the 2D animation shows how three bundles, consisting of 4, 8, and 4 strands of willow move around each other to form a knot.
-[![2D knot animation]("https://github.com/ottozastrow/wickerGen/blob/3ea97578f3346ccb5ad527fe53d3a53e3e7b73f5/images/3d%20knot%20with%203%20inputs.png" =200x)](https://youtu.be/vFCoQ6GhMaU)
+[![2D knot animation]("https://github.com/ottozastrow/wickerGen/blob/3ea97578f3346ccb5ad527fe53d3a53e3e7b73f5/images/3d%20knot%20with%203%20inputs.png" =200x800)](https://youtu.be/vFCoQ6GhMaU)
 click on the image to open the video
 
 
