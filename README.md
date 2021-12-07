@@ -7,6 +7,7 @@ The tool computes the pattern based on knot positions and knot connections which
 the 2D animation shows how three bundles, consisting of 4, 8, and 4 strands of willow move around each other to form a knot.
 
 <img src="https://github.com/ottozastrow/wickerGen/blob/3ea97578f3346ccb5ad527fe53d3a53e3e7b73f5/images/3d%20knot%20with%203%20inputs.png" width="30%"/>
+
 ![2d video animation](https://youtu.be/vFCoQ6GhMaU)
 
 
