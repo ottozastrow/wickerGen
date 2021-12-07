@@ -7,5 +7,4 @@ the 2D animation shows how three bundles, consisting of 4, 8, and 4 strands of w
 [![2D knot animation](https://youtu.be/ixJlgMRt51A)](https://youtu.be/ixJlgMRt51A)
 
 The 3d Animation shows a more complex construction module being braided. 
-https://youtu.be/vFCoQ6GhMaU
 [![2D knot animation](https://youtu.be/vFCoQ6GhMaU)](https://youtu.be/vFCoQ6GhMaU)
