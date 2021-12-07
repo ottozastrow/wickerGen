@@ -14,11 +14,11 @@ click on the image to open the video
 
 
 This graph is the input to the wickerGen tool.
-[!<img src="https://github.com/ottozastrow/wickerGen/blob/a4458d3a5dc8888d48d74b991b4385bf3921aa22/images/module%20graph.png" width="30%"/>(images/module graph.png)]
+<img src="https://github.com/ottozastrow/wickerGen/blob/a4458d3a5dc8888d48d74b991b4385bf3921aa22/images/module%20graph.png" width="30%"/>
 
 
 From this graph the braiding movement of strands in 3d across time is generated.
-[![2D knot animation](https://github.com/ottozastrow/wickerGen/blob/a4458d3a5dc8888d48d74b991b4385bf3921aa22/images/snip%20from%203d%20braid%20video.png)(https://youtu.be/ixJlgMRt51A)]
+[!<img src="https://github.com/ottozastrow/wickerGen/blob/a4458d3a5dc8888d48d74b991b4385bf3921aa22/images/snip%20from%203d%20braid%20video.png" width="40%"/> (https://youtu.be/ixJlgMRt51A)]
 
 
 ![3d output](https://github.com/ottozastrow/wickerGen/blob/aa4d645499e42305e3c282427227b58d925d0c1f/images/3d%20braided%20visualization.jpeg)(https://youtu.be/ixJlgMRt51A)
