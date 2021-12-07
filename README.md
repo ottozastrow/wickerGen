@@ -14,7 +14,10 @@ the 2D animation shows how three bundles, consisting of 4, 8, and 4 strands of w
 ## several knots combined to module
 This graph is the input to the wickerGen tool.
 
-<img style="float: left;" src="https://github.com/ottozastrow/wickerGen/blob/a4458d3a5dc8888d48d74b991b4385bf3921aa22/images/module%20graph.png" width="30%"/>
+![3d video animation](https://youtu.be/ixJlgMRt51A)
+
+
+<img style="float: left;" src="https://github.com/ottozastrow/wickerGen/blob/a4458d3a5dc8888d48d74b991b4385bf3921aa22/images/module%20graph.png" width="60%"/>
 
 
 From this graph the braiding movement of strands in 3d across time is generated.
@@ -26,6 +29,5 @@ From this graph the braiding movement of strands in 3d across time is generated.
 <img src="https://github.com/ottozastrow/wickerGen/blob/aa4d645499e42305e3c282427227b58d925d0c1f/images/3d%20braided%20visualization.jpeg"/>
 
 
-![3d video animation](https://youtu.be/ixJlgMRt51A)
 
 
