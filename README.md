@@ -14,7 +14,7 @@ This graph is the input to the wickerGen tool.
 
 
 From this graph the braiding movement of strands in 3d across time is generated.
-<img src="https://github.com/ottozastrow/wickerGen/blob/a4458d3a5dc8888d48d74b991b4385bf3921aa22/images/snip%20from%203d%20braid%20video.png" width="40%"/>]
+<img src="https://github.com/ottozastrow/wickerGen/blob/a4458d3a5dc8888d48d74b991b4385bf3921aa22/images/snip%20from%203d%20braid%20video.png" width="40%"/>
 ![3d video animation](https://youtu.be/ixJlgMRt51A)
 
 
