@@ -9,7 +9,7 @@ click on the image to open the video
 
 
 This graph is the input to the wickerGen tool.
-[![2D knot animation](https://github.com/ottozastrow/wickerGen/blob/a4458d3a5dc8888d48d74b991b4385bf3921aa22/images/module%20graph.png)]{ width: 200px;}(images/module graph.png)]
+[![2D knot animation](https://github.com/ottozastrow/wickerGen/blob/a4458d3a5dc8888d48d74b991b4385bf3921aa22/images/module%20graph.png)](images/module graph.png)]
 
 
 From this graph the braiding movement of strands in 3d across time is generated.
