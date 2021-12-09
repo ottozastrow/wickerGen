@@ -31,8 +31,11 @@ From this graph the braiding movement of strands in 3d across time is generated.
 
 
 
+The 3d lines output can be saved as obj (by setting an obj path with ```--obj_path```. This format can be opened with rhino. In Rhino these lines can be made to pipes with the rebuild(200) and Pipe(0.004) commands. The result looks like this:
+
 <img src="https://github.com/ottozastrow/wickerGen/blob/aa4d645499e42305e3c282427227b58d925d0c1f/images/3d%20braided%20visualization.jpeg"/>
 
 
+feel free to reach out if you have any questions
 
 
