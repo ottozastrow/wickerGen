@@ -36,7 +36,7 @@ parser.add_argument('--smallmodel', action='store_true',
 parser.add_argument('--save_to_file', action='store_true',
                     help='saves in html file')
 parser.add_argument('--obj_path', type=str, default=None,
-                    help='saves in html file')
+                    help='saves in braided 3d lines model as obj file')
 parser.add_argument('--animatesteps', type=int, default=50,
                     help='number of frames for animation')
 
