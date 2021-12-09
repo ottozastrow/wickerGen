@@ -36,6 +36,5 @@ The 3d lines output can be saved as obj (by setting an obj path with ```--obj_pa
 <img src="https://github.com/ottozastrow/wickerGen/blob/aa4d645499e42305e3c282427227b58d925d0c1f/images/3d%20braided%20visualization.jpeg"/>
 
 
-feel free to reach out if you have any questions
-
+feel free to reach out via GitHub or LinkedIn if you have any questions
 
