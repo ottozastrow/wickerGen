@@ -2,7 +2,7 @@ import numpy as np
 from numpy import cos, divide, sin
 import math
 
-from util_classes import *
+from .util_classes import *
 
 
 pi = np.pi

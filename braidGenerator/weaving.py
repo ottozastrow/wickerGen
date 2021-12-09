@@ -1,10 +1,11 @@
 import logging
+import math
+
 import numpy as np
 
-from utils import *
-from util_classes import * 
-from knot import *
-import math
+from .utils import *
+from .util_classes import * 
+from .knot import *
 
 def update_strand_slots_by_angle(strands):
      if len(strands[0].x)>0:

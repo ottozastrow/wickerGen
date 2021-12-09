@@ -10,15 +10,15 @@ knot logic without limiations of horngears.
 - later bundles might have 4,8,12, strand (like 4, but side-by-side)
 """
 
+import argparse
 from os import write
-import matplotlib.pyplot as plt
-import numpy as np
 import logging, sys
 
-from visualize import *
-from graph import *
-import argparse
-from utils import interpolate_strands
+import matplotlib.pyplot as plt
+import numpy as np
+
+from modelBuilder import models
+from braidGenerator import visualize, graph, utils, util_classes, weaving
 
 
 parser = argparse.ArgumentParser()
@@ -42,33 +42,33 @@ parser.add_argument('--animatesteps', type=int, default=50,
 
 
 args = parser.parse_args()
-Arena.animation_steps = args.animatesteps
+util_classes.Arena.animation_steps = args.animatesteps
 
 if __name__ =="__main__":
     logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
     if args.smallmodel:
         # links, startknots, knots = generate_sample_graph()
-        links, startknots, knots = generate_knot_graph()
+        links, startknots, knots = models.generate_knot_graph()
     else:
-        links, startknots, knots = generate_nice_sample_graph()
+        links, startknots, knots = models.generate_nice_sample_graph()
 
     for knot in knots:
-        parents = [get_knot_by_id(id, knots) for id in links[1][knot.id]]
+        parents = [graph.get_knot_by_id(id, knots) for id in links[1][knot.id]]
         knot.initialize_knot_slots(parents)
         knot.align_orientation(parents)
 
     if args.showgraph:
-        plot_graph(knots, links)
+        visualize.plot_graph(knots, links)
 
-    weave_graph(links, startknots, knots)
+    graph.weave_graph(links, startknots, knots)
 
-    strands = strands_from_graph(startknots)
+    strands = graph.strands_from_graph(startknots)
     if args.show3d:
-        plot_3d_strands(strands, args.save_to_file)
+        visualize.plot_3d_strands(strands, args.save_to_file)
 
     if args.obj_path != None:
-        write_obj_file(strands, args.obj_path)
+        visualize.write_obj_file(strands, args.obj_path)
 
 
     if args.animate:
@@ -76,11 +76,11 @@ if __name__ =="__main__":
             animated_strands_2d = calc_2d_robot_plane(strands)
             plot_animated_strands(animated_strands_2d, save=args.save_to_file)
         else:
-            plot_animated_strands(strands, save=args.save_to_file)
+            visualize.plot_animated_strands(strands, save=args.save_to_file)
 
     if args.showcombined:
-        animated_strands_3d = calc_3d_robot_plane(strands)
-        plot_3d_animated_strands(animated_strands_3d, save=args.save_to_file)
+        animated_strands_3d = visualize.calc_3d_robot_plane(strands)
+        visualize.plot_3d_animated_strands(animated_strands_3d, save=args.save_to_file)
 
         
 

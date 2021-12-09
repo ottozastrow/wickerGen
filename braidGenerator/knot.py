@@ -1,6 +1,6 @@
 from numpy import arctan
-from util_classes import *
-from utils import rotate, generate_strands, generate_circular_positions
+from .utils import rotate, generate_strands, generate_circular_positions
+from .util_classes import *
 
 
 class Knot:

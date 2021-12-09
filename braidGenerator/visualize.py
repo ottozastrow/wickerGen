@@ -1,10 +1,12 @@
+from copy import deepcopy
+
 import matplotlib.pyplot as plt
-from graph import count_connections, get_knot_by_id
-from util_classes import *
-from utils import *
 import plotly.express as px
 import pandas as pd
-from copy import deepcopy
+
+from .graph import get_knot_by_id
+from .util_classes import *
+from .utils import *
 
 
 def update_layout(fig):
