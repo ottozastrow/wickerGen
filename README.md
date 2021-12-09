@@ -4,7 +4,7 @@ this tool can be used to generate 3d wicker patterns for building components. At
 The tool computes the pattern based on knot positions and knot connections which are given as input.
 
 ## usage
-``python3 main.py --show3d --showcombined --showgraph --animate``
+```python3 main.py --show3d --showcombined --showgraph --animate``
 
 add ``--smallmodel``` to only show a single knot (is 20x faster)
 
