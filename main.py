@@ -11,40 +11,49 @@ knot logic without limiations of horngears.
 """
 
 import argparse
+import logging
+import sys
 from os import write
-import logging, sys
 
 import matplotlib.pyplot as plt
 import numpy as np
 
+from braidGenerator import graph, util_classes, utils, visualize, weaving
 from modelBuilder import models
-from braidGenerator import visualize, graph, utils, util_classes, weaving
-
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--show3d', action='store_true',
-                    help='plots entire model with individual strands in 3d')
-parser.add_argument('--animate', action='store_true',
-                    help='plots 2d animation of strand movement')
-parser.add_argument('--showcombined', action='store_true',
-                    help='plots 3d model and robot floor')
-parser.add_argument('--showgraph', action='store_true',
-                    help='shows graph network before weaving')
+parser.add_argument(
+    "--show3d",
+    action="store_true",
+    help="plots entire model with individual strands in 3d",
+)
+parser.add_argument(
+    "--animate", action="store_true", help="plots 2d animation of strand movement"
+)
+parser.add_argument(
+    "--showcombined", action="store_true", help="plots 3d model and robot floor"
+)
+parser.add_argument(
+    "--showgraph", action="store_true", help="shows graph network before weaving"
+)
 
-parser.add_argument('--smallmodel', action='store_true',
-                    help='plots smaller model')
-parser.add_argument('--save_to_file', action='store_true',
-                    help='saves in html file')
-parser.add_argument('--obj_path', type=str, default=None,
-                    help='saves in braided 3d lines model as obj file')
-parser.add_argument('--animatesteps', type=int, default=50,
-                    help='number of frames for animation')
+parser.add_argument("--smallmodel", action="store_true", help="plots smaller model")
+parser.add_argument("--save_to_file", action="store_true", help="saves in html file")
+parser.add_argument(
+    "--obj_path",
+    type=str,
+    default=None,
+    help="saves in braided 3d lines model as obj file",
+)
+parser.add_argument(
+    "--animatesteps", type=int, default=50, help="number of frames for animation"
+)
 
 
 args = parser.parse_args()
 util_classes.Arena.animation_steps = args.animatesteps
 
-if __name__ =="__main__":
+if __name__ == "__main__":
     logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
     if args.smallmodel:
@@ -70,9 +79,8 @@ if __name__ =="__main__":
     if args.obj_path != None:
         visualize.write_obj_file(strands, args.obj_path)
 
-
     if args.animate:
-        if False: # will show extrapolated robot position
+        if False:  # will show extrapolated robot position
             animated_strands_2d = calc_2d_robot_plane(strands)
             plot_animated_strands(animated_strands_2d, save=args.save_to_file)
         else:
@@ -81,6 +89,3 @@ if __name__ =="__main__":
     if args.showcombined:
         animated_strands_3d = visualize.calc_3d_robot_plane(strands)
         visualize.plot_3d_animated_strands(animated_strands_3d, save=args.save_to_file)
-
-        
-

@@ -1,6 +1,7 @@
-from utils import * 
-from util_classes import * 
 import numpy as np
+from util_classes import *
+from utils import *
+
 
 def test_rotate():
     origin = Pos(1, 2, 3)
