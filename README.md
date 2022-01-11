@@ -37,4 +37,3 @@ The 3d lines output can be saved as obj (by setting an obj path with ```--obj_pa
 
 
 feel free to reach out via GitHub or LinkedIn if you have any questions
-

@@ -1,7 +1,7 @@
 """
 input a set of curves and points, output robot movement
-MVP: 
-plot movement. 
+MVP:
+plot movement.
 input starting points and connections from GH file
 knot logic without limiations of horngears.
 - distinguish between knot type and movement.
