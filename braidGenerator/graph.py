@@ -1,13 +1,16 @@
 import logging
 
+import numpy as np
+
+from . import utils, weaving
 from .knot import Knot
-from .utils import angle_from_circle_slot, interpolate_strands
-from .weaving import *
+from .util_classes import KnotType
 
 
 def choose_parent_child_link(parent: Knot, child: Knot):
     # decide which of the childrens inputs to connect to
-    # by choosing the input output position combination with the smalles euclid distance
+    # by choosing the input output position combination with
+    # the smalles euclid distance
     smallest_dist = None
     selected_inpos = None
     selected_outpos = None
@@ -19,7 +22,8 @@ def choose_parent_child_link(parent: Knot, child: Knot):
             inpos = child.input_positions[inpos_i]
             dist = np.linalg.norm(outpos.np() - inpos.np())
 
-            # nasty hack to align vertical strands correctly. only works for knotsize 3
+            # nasty hack to align vertical strands correctly.
+            # only works for knotsize 3
             if outpos_i == len(parent.output_positions):
                 if inpos_i != len(parent.output_positions):
                     dist *= 5
@@ -61,7 +65,8 @@ def get_knot_by_id(id, knots):
 def weave_graph(links, startknots, knots):
     """
     how it works:
-    - start with n bundles and a graph of knots (knots have a xyz coordinate, bundles have a start xyz)
+    - start with n bundles and a graph of knots (knots have a xyz
+      coordinate, bundles have a start xyz)
     loop:
     - for every bundle get next knot (if not in current knot set)
     - compute bundle target positions (close to future knot)
@@ -100,7 +105,7 @@ def weave_graph(links, startknots, knots):
 
                     # only draw bundle if preceding knots were already drawn
                     if parent.output_bundles[selected_outpos_i] is not None:
-                        weave_straight_new(
+                        weaving.weave_straight_new(
                             parent.output_bundles[selected_outpos_i],
                             selected_outpos,
                             selected_inpos,
@@ -127,9 +132,9 @@ def weave_graph(links, startknots, knots):
                 for i in range(len(knot.input_bundles)):
                     if knot.inputs_used[i] == False:
                         knot.inputs_used[i] = True
-                        knot.input_bundles[i] = generate_strands(4)
+                        knot.input_bundles[i] = utils.generate_strands(4)
 
-                weave_knot(knot)
+                weaving.weave_knot(knot)
         next_knots = []
 
 
@@ -155,6 +160,6 @@ def strands_from_graph(startknots):
             strands += bundle
 
     # make strands smooth by interpolating space in between
-    interpolate_strands(strands, kind="cubic", step_size=0.005)
+    utils.interpolate_strands(strands, kind="cubic", step_size=0.005)
 
     return strands

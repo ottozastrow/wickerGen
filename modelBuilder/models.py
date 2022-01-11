@@ -3,9 +3,10 @@ from collections import defaultdict
 import numpy as np
 
 from braidGenerator import *
-from braidGenerator.graph import add_link, angle_from_circle_slot
+from braidGenerator.graph import add_link
 from braidGenerator.knot import Knot
 from braidGenerator.util_classes import KnotType, Pos
+from braidGenerator.utils import angle_from_circle_slot
 
 
 def generate_circular_knots(

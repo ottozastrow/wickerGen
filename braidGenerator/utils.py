@@ -2,6 +2,7 @@ import math
 
 import numpy as np
 from numpy import cos, sin
+from scipy import interpolate
 
 from .util_classes import Arena, Pos, Strand
 

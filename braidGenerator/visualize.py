@@ -3,8 +3,8 @@ from copy import deepcopy
 import numpy as np
 import pandas as pd
 import plotly.express as px
-import utils
 
+from . import utils
 from .graph import get_knot_by_id
 from .util_classes import Arena, Strand
 
