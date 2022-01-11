@@ -1,9 +1,9 @@
 import math
 
 import numpy as np
-from numpy import cos, divide, sin
+from numpy import cos, sin
 
-from .util_classes import *
+from .util_classes import Arena, Pos, Strand
 
 pi = np.pi
 
