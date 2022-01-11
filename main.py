@@ -13,12 +13,8 @@ knot logic without limiations of horngears.
 import argparse
 import logging
 import sys
-from os import write
 
-import matplotlib.pyplot as plt
-import numpy as np
-
-from braidGenerator import graph, util_classes, utils, visualize, weaving
+from braidGenerator import graph, util_classes, visualize
 from modelBuilder import models
 
 parser = argparse.ArgumentParser()
@@ -76,13 +72,13 @@ if __name__ == "__main__":
     if args.show3d:
         visualize.plot_3d_strands(strands, args.save_to_file)
 
-    if args.obj_path != None:
+    if args.obj_path is not None:
         visualize.write_obj_file(strands, args.obj_path)
 
     if args.animate:
         if False:  # will show extrapolated robot position
-            animated_strands_2d = calc_2d_robot_plane(strands)
-            plot_animated_strands(animated_strands_2d, save=args.save_to_file)
+            animated_strands_2d = visualize.calc_2d_robot_plane(strands)
+            visualize.plot_animated_strands(animated_strands_2d, save=args.save_to_file)
         else:
             visualize.plot_animated_strands(strands, save=args.save_to_file)
 
