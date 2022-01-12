@@ -70,9 +70,43 @@ def animations_to_dataframe(animation_steps: list[list[Strand]]):
     return points
 
 
+def points_list_from_strand_xyz(trace):
+    points = []
+    for i in range(len(trace["x"])):
+        points.append(
+            [
+                trace["x"][i],
+                trace["y"][i],
+                trace["z"][i],
+            ]
+        )
+    return points
+
+
 def plot_3d_animated_strands(animation_steps: list[list[Strand]], save: bool):
     df = animations_to_dataframe(animation_steps)
-
+    # import plotly.graph_objects as go
+    # points = points_list_from_strand_xyz(animation_steps[-1])
+    # go.Figure(data=[
+    #     go.Mesh3d(
+    #     # 8 vertices of a cube
+    #     x=[0, 0, 1, 1, 0, 0, 1, 1],
+    #     y=[0, 1, 1, 0, 0, 1, 1, 0],
+    #     z=[0, 0, 0, 0, 1, 1, 1, 1],
+    #     colorbar_title='z',
+    #     colorscale=[[0, 'gold'],
+    #                 [0.5, 'mediumturquoise'],
+    #                 [1, 'magenta']],
+    #     # Intensity of each vertex, which will be interpolated and color-coded
+    #     intensity = np.linspace(0, 1, 8, endpoint=True),
+    #     # i, j and k give the vertices of triangles
+    #     i = [7, 0, 0, 0, 4, 4, 6, 6, 4, 0, 3, 2],
+    #     j = [3, 4, 1, 2, 5, 6, 5, 2, 0, 1, 6, 3],
+    #     k = [0, 7, 2, 3, 6, 7, 1, 1, 5, 5, 7, 6],
+    #     name='y',
+    #     showscale=True
+    # ),
+    # go.scatter3d()
     fig = px.line_3d(
         df,
         x="x",
@@ -133,7 +167,8 @@ def strands_to_dict_list(strands: list[Strand], animation_step: int = 0) -> list
                 {
                     "y": strand.y[t],
                     "x": strand.x[t],
-                    "z": -utils.round_step_size(strand.z[t], 0.001),
+                    "z": strand.z[t],
+                    # "z": #-utils.round_step_size(strand.z[t], 0.001),
                     "size": 0.017,
                     "color": str(i % 2),
                     "strand": i,
@@ -191,7 +226,11 @@ def plot_animated_strands(strands, save):
 
 
 def calc_3d_robot_plane(
-    strands: list[Strand], relative_time: float = 0.10
+    strands: list[Strand],
+    relative_time: float = 0.0,
+    robot_pos_fn=utils.compute_robobt_position,
+    steps=Arena.animation_steps,
+    slice_height=Arena.interpolate_steps_per_meter,
 ) -> list[list[Strand]]:
     """
     relative_time: float between 0 and 1.
@@ -202,9 +241,8 @@ def calc_3d_robot_plane(
     # time is -z because we weave top-down
     cut_threshold = maxz - (maxz - minz) * relative_time
 
-    slice_height = Arena.interpolate_steps_per_meter
     animation_steps = []
-    for i in range(Arena.animation_steps):
+    for i in range(steps):
         new_strands = []
         for strand in strands:
             # stop if animation has more steps then strand
@@ -222,7 +260,7 @@ def calc_3d_robot_plane(
                     new_strand.x[0],
                     new_strand.y[0],
                     new_strand.z[0],
-                ) = utils.compute_robobt_position(new_strand)
+                ) = robot_pos_fn(new_strand)
 
                 new_strands.append(new_strand)
         animation_steps.append(new_strands)

@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "wickergen"
+version = "0.1.0"
+description = "a package for generating wicker patterns for robotic manufactoring of willow construction components"
+authors = ["Otto Zastrow <otto.zastrow@hotmail.de>"]
+license = "GPL-3.0 License"
+readme = "README.md"
+repository = "https://github.com/ottozastrow/wickerGen"
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

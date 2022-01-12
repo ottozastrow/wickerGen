@@ -1,7 +1,6 @@
 from collections import defaultdict
 
 import numpy as np
-
 from braidGenerator import *
 from braidGenerator.graph import add_link
 from braidGenerator.knot import Knot

@@ -165,5 +165,7 @@ def compute_robobt_position(strand: Strand, index=2) -> tuple[float, float, floa
 
         # -1 added for better visualization
         return xnew[0], ynew[0], floor_z
+    elif len(strand.x) == 1:
+        return strand.x, strand.y, strand.z
     else:
-        assert False
+        return 0, 0, 0

@@ -37,7 +37,7 @@ class Strand:
         self.knot_slot = slot  # position index within several bundles
         self.x: list[float] = []
         self.y: list[float] = []
-        self.z: list[float] = []
+        self.z = []
 
     def interpolate(self, divide_steps: int):
         # make strands smooth by interpolating space in between
@@ -61,7 +61,7 @@ class Strand:
 class Arena:
     """globally useful configs"""
 
-    animation_steps = 5
+    animation_steps = 20
 
     divide_steps = 1
     divide_knot_steps = 2
