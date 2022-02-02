@@ -166,7 +166,7 @@ def generate_nice_sample_graph():
     layers[0] = start_knots_diagonal
 
     start_knots_vertical = generate_circular_knots(num_elements*2, layer_heights[0], layer_radia[0], 
-                                         KnotType.startknot, 8,
+                                         KnotType.startknot, 4,
                                          angle_from_circle_slot(num_elements*2, 0.0))
 
     center_knots = [Knot(KnotType.startknot, Pos(0,0,h)) for h in layer_heights]
@@ -262,7 +262,7 @@ def generate_sample_graph():
     return links, startknots, knots
 
 
-def generate_knot_graph(inputs:int=3):
+def generate_knot_graph(inputs:int=2):
     top_knots = generate_circular_knots(inputs, 1.6, 0.3, KnotType.startknot, 4, 0)
     middle_knot_top = Knot(KnotType.startknot, Pos(0,0,1.6), 8)
     middle_knot = Knot(KnotType.move2, Pos(0,0,0.8))

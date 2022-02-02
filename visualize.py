@@ -7,6 +7,8 @@ import pandas as pd
 from copy import deepcopy
 
 
+color_map = {0:"black", 1:"navy", 2:"olive", 3:"lightgrey"}
+
 def update_layout(fig):
     fig.update_layout(
         scene = dict(aspectmode = "data", xaxis=dict(visible=False, showline=False, showgrid=False),
@@ -21,7 +23,7 @@ def plot_3d_strands(strands: list[Strand], save:bool):
     df = pd.DataFrame(points)
 
     fig = px.line_3d(df, x='x', y='y', z='z', color="color", 
-                     line_group="strand", color_discrete_map={0:"brown", 1:"chocolate"})
+                     line_group="strand", color_discrete_map=color_map)
     update_layout(fig)
     
     fig.show()
@@ -59,7 +61,7 @@ def animations_to_dataframe(animation_steps: list[list[Strand]]):
 def plot_3d_animated_strands(animation_steps: list[list[Strand]], save: bool):
     df = animations_to_dataframe(animation_steps)
 
-    fig = px.line_3d(df, x='x', y='y', z='z', color="color", color_discrete_map={0:"brown", 1:"chocolate"},
+    fig = px.line_3d(df, x='x', y='y', z='z', color="color", color_discrete_map=color_map,
                         animation_frame='animation_step', animation_group='strand', line_group="strand")
     update_layout(fig)
     
@@ -101,9 +103,18 @@ def strands_to_dict_list(strands: list[Strand], animation_step:int=0) -> list[di
     assert(len(strands[0].x) > 0), "this strand has no history"
     for i in range(len(strands)):
         strand = strands[i]
-        for t in range(len(strand.x)):            
+        for t in range(len(strand.x)):
+            color = i
+            if color < 4:
+                color = 0
+            elif 12 <= i < 16:
+                color = 1
+            elif len(strands) // 2 + 8 <= i < len(strands) // 2 + 12:
+                color = 2
+            else:
+                color = 3
             points.append({'y':strand.y[t], 'x':strand.x[t], 'z':round_step_size(strand.z[t], 0.001), "size":0.017,
-                            'color':i%2,  'strand':i, 'animation_step':animation_step, 'text':strand.slot})
+                            'color':color,  'strand':i, 'animation_step':animation_step, 'text':strand.slot})
     return points
 
 
@@ -111,8 +122,10 @@ def plot_animated_strands(strands, save):
     points = strands_to_dict_list(strands)
     df = pd.DataFrame(points)
 
-    fig = px.scatter(df, x='x', y='y', color="color", size="size", width=900, height= 900, hover_name="text", 
-                        animation_frame='z', animation_group='strand',color_discrete_map={0:"brown", 1:"chocolate"})
+    fig = px.scatter(df, x='x', y='y', color="color", size="size",
+                     #width=900, height= 350, 
+                     hover_name="text", 
+                     animation_frame='z', animation_group='strand', color_discrete_map=color_map)
     fig.layout.updatemenus[0].buttons[0].args[1]["frame"]["duration"] = 30
     fig.update_layout({
     'plot_bgcolor': 'rgba(0, 0, 0, 0)',

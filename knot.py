@@ -43,7 +43,7 @@ class Knot:
             self.output_bundles = [generate_strands(self.num_strands) for i in range(self.num_positions)]
         else:
             self.output_bundles = [None for i in range(self.num_positions)]
-        self.height = Arena.knot_cycle_height * len(parents) * 2
+        self.height = Arena.knot_cycle_height * np.sqrt(len(parents))
         
         # add circular positions
         if self.num_positions > 1:
@@ -53,7 +53,7 @@ class Knot:
             self.output_positions += generate_circular_positions(self.pos, knot_positions, self.pos.z - self.height/2, 
                                                                 Arena.knot_bundle_distance, 0)
         # add center position
-        self.input_positions.append(Pos(self.pos.x, self.pos.y, self.pos.z + self.height/2 * 1.2))  # 1.2 is nasty hack
+        self.input_positions.append(Pos(self.pos.x, self.pos.y, self.pos.z + self.height/2))
         self.output_positions.append(Pos(self.pos.x, self.pos.y, self.pos.z - self.height/2))
 
         self.input_bundles = [None for i in range(self.num_input_positions)]      

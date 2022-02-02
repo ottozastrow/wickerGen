@@ -65,7 +65,9 @@ def weave_straight_new(strands: list[Strand], start:Pos, end:Pos, start_angle, e
 def calc_relative_strand_movement(strand, i, num_slots, start_angle):
     circle_points(num_slots, 0, 0)
     x, y = [], []
-    braid_radius = 2 * Arena.strand_width * math.sqrt(num_slots)
+    current = 2 * Arena.strand_width * math.sqrt(num_slots)
+    radius_factor = Arena.straight_braid_radius / current
+    braid_radius = current * radius_factor 
 
     x_center,y_center = circle_points(num_slots, start_angle, braid_radius )
     offset_angle = np.pi * 2 / num_slots / 2  # move half a slot forward
@@ -167,7 +169,7 @@ def weave_knot(knot):
         current_segment = []
         ib = ibs[i]
         if ib is None:
-            ib = generate_strands(4) 
+            ib = generate_strands(4)
             logging.debug("WARNING: unconnected knot")
         for j in range(len(ib)):
             strand = ibs[i][j]
@@ -189,7 +191,7 @@ def weave_knot(knot):
                 circle_segments.append(strand)
             current_strand_count += len(center_segments[i])
         strands += ib
-    weave_cycles = 2
+    weave_cycles = 1
 
 
     weave_straight_new(circle_segments, start, end, knot.angle + angle + np.pi/4, knot.angle + angle, weave_cycles=weave_cycles)
@@ -230,6 +232,14 @@ def weave_knot(knot):
                 circle_segments[i].slot = counter
                 counter += 1
         knot.output_bundles[-1] = remaining_strands
+
+    num_bundles = len(knot.input_bundles) - 1
+    for i in range(num_bundles):
+        knot.output_bundles[i] = knot.input_bundles[num_bundles-i-1]
+    knot.output_bundles[-1] = knot.input_bundles[-1]
+    #import pdb
+    
+    #pdb.set_trace()
 
     # # # set ouput bundles
     # splits = []
