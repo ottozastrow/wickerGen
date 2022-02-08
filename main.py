@@ -48,8 +48,17 @@ if __name__ =="__main__":
     logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
     if args.smallmodel:
-        # links, startknots, knots = generate_sample_graph()
-        links, startknots, knots = generate_knot_graph()
+        # links, startknots, knots = generate_knot_graph()
+        from read_obj import load_graph_from_file
+        links, startknots, knots = load_graph_from_file("renderings/input.obj")
+        links_down = links[0]
+        counter = 0
+        for el in links_down.keys():
+            if len(links_down[el]) < 2:
+                counter += 1
+                knot = get_knot_by_id(el, knots)
+                print(knot.id, knot.pos.z, knot.knottype == KnotType.startknot)
+        print(counter)
     else:
         links, startknots, knots = generate_nice_sample_graph()
 

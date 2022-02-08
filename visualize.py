@@ -23,7 +23,7 @@ def plot_3d_strands(strands: list[Strand], save:bool):
     df = pd.DataFrame(points)
 
     fig = px.line_3d(df, x='x', y='y', z='z', color="color", 
-                     line_group="strand", color_discrete_map=color_map)
+                     line_group="strand")#, color_discrete_map=color_map)
     update_layout(fig)
     
     fig.show()
@@ -70,6 +70,25 @@ def plot_3d_animated_strands(animation_steps: list[list[Strand]], save: bool):
         fig.write_html("renderings/sample_3d_animation.html")
 
 
+def plot_points(knots, links):
+    edges_x, edges_z, edges_y, indexes = [], [], [], []
+    index = 0
+
+    for knot in knots:
+        edges_x.append(knot.pos.x)
+        edges_y.append(knot.pos.y)
+        edges_z.append(knot.pos.z)
+        indexes.append(index)
+        index += 1
+
+    df = pd.DataFrame(list(zip(edges_x, edges_y, edges_z, indexes)), columns =['x', 'y', 'z', 'index'])
+    
+    fig = px.line_3d(df, x='x', y='y', z='z', color="index")
+    
+    update_layout(fig)
+    
+    fig.show()
+
 def plot_graph(knots, links):
     links_down, links_up = links
     counter = 0
@@ -113,7 +132,7 @@ def strands_to_dict_list(strands: list[Strand], animation_step:int=0) -> list[di
                 color = 2
             else:
                 color = 3
-            points.append({'y':strand.y[t], 'x':strand.x[t], 'z':round_step_size(strand.z[t], 0.001), "size":0.017,
+            points.append({'y':strand.y[t], 'x':strand.x[t], 'z':round_step_size(strand.z[t], 0.001), "size":0.01,
                             'color':color,  'strand':i, 'animation_step':animation_step, 'text':strand.slot})
     return points
 
@@ -123,7 +142,7 @@ def plot_animated_strands(strands, save):
     df = pd.DataFrame(points)
 
     fig = px.scatter(df, x='x', y='y', color="color", size="size",
-                     #width=900, height= 350, 
+                     width=900, height= 900, 
                      hover_name="text", 
                      animation_frame='z', animation_group='strand', color_discrete_map=color_map)
     fig.layout.updatemenus[0].buttons[0].args[1]["frame"]["duration"] = 30

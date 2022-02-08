@@ -53,12 +53,12 @@ class Knot:
             self.output_positions += generate_circular_positions(self.pos, knot_positions, self.pos.z - self.height/2, 
                                                                 Arena.knot_bundle_distance, 0)
         # add center position
-        self.input_positions.append(Pos(self.pos.x, self.pos.y, self.pos.z + self.height/2))
+        self.input_positions.append(Pos(self.pos.x, self.pos.y, self.pos.z + self.height/2 * 1.2))  # 1.2 is nasty hack
         self.output_positions.append(Pos(self.pos.x, self.pos.y, self.pos.z - self.height/2))
 
-        self.input_bundles = [None for i in range(self.num_input_positions)]      
-        self.inputs_used = [False for i in range(self.num_input_positions)]
-        self.outputs_used = [False for i in range(self.num_output_positions)]
+        self.input_bundles = [None for i in range(self.num_positions)]      
+        self.inputs_used = [False for i in range(self.num_positions)]
+        self.outputs_used = [False for i in range(self.num_positions)]
 
     def align_orientation(self, parents):
         """orientation of knot is made dependant on parents"""

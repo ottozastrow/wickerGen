@@ -47,15 +47,15 @@ class Strand:
             x = np.array(self.x)
             y = np.array(self.y)
             z = np.array(self.z)
-            fx = interpolate.interp1d(z, x, kind="cubic")
-            fy = interpolate.interp1d(z, y, kind='cubic')
+
+            fy = interpolate.bspline(z, y, 3)
+            fx = interpolate.bspline(z, x, 3)
             newz = np.linspace(min(z), max(z), len(z)*divide_steps)
             xnew = fx(newz)   # use interpolation function returned by `interp1d`
             ynew = fy(newz)   # use interpolation function returned by `interp1d`
             self.x = list(xnew)
             self.y = list(ynew)
             self.z = list(newz)
-
 
 
 class Arena:
@@ -65,12 +65,13 @@ class Arena:
     divide_steps = 1
     divide_knot_steps = 2
     interpolate_steps = 12
-    straight_braid_radius = 0.04
-    knot_bundle_distance = 0.09
+    straight_braid_radius = 0.08
+    knot_bundle_distance = 0.05
+    knot_width_factor = 0.7
     knot_gridsize_y = 0.04
     knot_gridsize_x = 0.01
     weave_cycle_height = 0.12
-    knot_cycle_height = weave_cycle_height * 1.5
+    knot_cycle_height = weave_cycle_height
     strand_width = 0.004  # including some padding
 
     interpolate_steps_per_meter = 0.005

@@ -29,11 +29,11 @@ def weave_straight_new(strands: list[Strand], start:Pos, end:Pos, start_angle, e
 
     # assign circle slots from strand angle
     update_strand_slots_by_angle(strands)
-
+    weave_dist = np.sqrt(height**2 + (end.x-start.x)**2 + (end.y-start.y)**2)
     # movement height is adjusted such that after N "weaves" the starting position is achieved
     if weave_cycles == None:
-        adjusted_weave_height = calc_adjusted_weave_height(height, Arena.weave_cycle_height)
-        weave_cycles = round(height/adjusted_weave_height)
+        adjusted_weave_height = calc_adjusted_weave_height(weave_dist, Arena.weave_cycle_height)
+        weave_cycles = round(weave_dist/adjusted_weave_height)
 
         adjusted_weave_height = adjusted_weave_height if not is_knot else Arena.knot_cycle_height
     divide_steps = 2
@@ -65,9 +65,7 @@ def weave_straight_new(strands: list[Strand], start:Pos, end:Pos, start_angle, e
 def calc_relative_strand_movement(strand, i, num_slots, start_angle):
     circle_points(num_slots, 0, 0)
     x, y = [], []
-    current = 2 * Arena.strand_width * math.sqrt(num_slots)
-    radius_factor = Arena.straight_braid_radius / current
-    braid_radius = current * radius_factor 
+    braid_radius = Arena.strand_width * (num_slots**Arena.knot_width_factor) * Arena.straight_braid_radius * 20
 
     x_center,y_center = circle_points(num_slots, start_angle, braid_radius )
     offset_angle = np.pi * 2 / num_slots / 2  # move half a slot forward
@@ -166,7 +164,6 @@ def weave_knot(knot):
 
     # combine bundles and circle segments to large circle of strands
     for i in range(num_splits):
-        current_segment = []
         ib = ibs[i]
         if ib is None:
             ib = generate_strands(4)
@@ -191,12 +188,10 @@ def weave_knot(knot):
                 circle_segments.append(strand)
             current_strand_count += len(center_segments[i])
         strands += ib
-    weave_cycles = 1
+    weave_cycles = 2
 
 
     weave_straight_new(circle_segments, start, end, knot.angle + angle + np.pi/4, knot.angle + angle, weave_cycles=weave_cycles)
-    # debug_slots(circle_segments, knot)
-
 
     points = []
     for i in range(len(circle_segments)):
@@ -233,43 +228,16 @@ def weave_knot(knot):
                 counter += 1
         knot.output_bundles[-1] = remaining_strands
 
+    # determine which bundle takes which output position
+    # main principle: bundles should go out the opposite to
+    # the direction the entered the knot
     num_bundles = len(knot.input_bundles) - 1
     for i in range(num_bundles):
-        knot.output_bundles[i] = knot.input_bundles[num_bundles-i-1]
+        shifted_bundle_index = (i + (num_bundles)//2) % num_bundles
+        knot.output_bundles[shifted_bundle_index] = knot.input_bundles[i]
     knot.output_bundles[-1] = knot.input_bundles[-1]
-    #import pdb
     
-    #pdb.set_trace()
 
-    # # # set ouput bundles
-    # splits = []
-    # counter = 0
-    # for i in range(len(circle_segments)):
-    #     if (i+1)%2:
-    #         strand.slot = circle_segments[i].slot
-    #     else:
-    #         strand.slot = circle_segments[strand.slot].slot
-
-    # counter = 0
-    # for i in range(len(bundle_sizes)):
-    #     current_strands = []
-    #     for j in range(bundle_sizes[i]): 
-    #         current_strand = circle_segments[counter]
-    #         current_strand.slot = j
-    #         current_strands.append(current_strand)
-    #         counter += 1
-    #     knot.output_bundles[i] = current_strands
-    # print(bundle_sizes)
-    
-    # for i in range(len(circle_segments)):
-    #     strand = circle_segments[i]
-    #     direction = (i%2) *2 -1
-    #     old_slot, bundle_index = operation_map[(i+direction * 0)%len(circle_segments)]
-    #     strand.slot = old_slot
-    #     knot.output_bundles[bundle_index].append(strand)
-
-    # # for i in knot.output_bundles:
-    #     debug_slots(i)
 
 
 def debug_slots(strands, knot):
